@@ -1,0 +1,57 @@
+{
+  "name": "battleship",
+  "version": "1.0.0",
+  "description": "Tang Game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --progress --colors --watch --config webpack.dev.js",
+    "serve": "webpack-dev-server --mode development --config webpack.dev.js",
+    "serve-production": "webpack-dev-server --mode production --config webpack.prod.js",
+    "type": "tsc",
+    "build": "webpack --progress --colors --mode development --config webpack.dev.js",
+    "type-build": "npm run type && webpack --progress --colors --mode development --config webpack.dev.js",
+    "build-production": "webpack --progress --colors --mode production --config webpack.prod.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/mahmood8664/battleship-client.git"
+  },
+  "keywords": [
+    "Game"
+  ],
+  "author": "Mahmoud AllamehAmiri",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/mahmood8664/battleship-client/issues"
+  },
+  "homepage": "https://gitlab.com/mahmood8664/battleship-client#readme",
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "phaser": "^3.24.1",
+    "phaser3-rex-plugins": "^1.1.23",
+    "regenerator-runtime": "^0.13.7"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.11.0",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^3.6.0",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^8.0.1",
+    "typescript": "^3.9.7",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.0.8"
+  }
+}

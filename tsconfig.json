@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "target": "ES5",
+    "allowJs": true,
+    "sourceMap": true,
+    "alwaysStrict": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "esModuleInterop": true,
+//    "declaration": true,
+    "outDir": "ts-out",
+
+    "allowSyntheticDefaultImports": true,
+//    "strictPropertyInitialization": false,
+    "lib": [
+      "ES6",
+      "DOM",
+      "ES2015.Promise",
+      "ES2015.Generator",
+      "ES2015",
+      "ES2015.Proxy",
+      "ES2015.Reflect",
+      "ES2015.Collection",
+      "ES2015.Iterable",
+      "ES2015.Symbol",
+      "ES2015.Symbol.WellKnown",
+      "DOM.Iterable",
+      "ScriptHost"
+    ]
+  },
+  "include": [
+    "src",
+    "node_modules/phaser/scripts/tsgen/test/src/game.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+
+}
