@@ -1,23 +1,25 @@
 import {Scene} from "phaser";
 
-export class OKDialog {
+export class YesNoDialog {
     private scene: Scene;
     private title: string;
     private text: string;
-    private okCallback: Function;
+    private yesCallback: Function;
+    private noCallback: Function;
 
-    constructor(scene: Scene, title: string, text: string, yesCallback: Function) {
+    constructor(scene: Scene, title: string, text: string, yesCallback: Function, noCallback: Function) {
         this.scene = scene;
         this.title = title;
         this.text = text;
-        this.okCallback = yesCallback;
+        this.yesCallback = yesCallback;
+        this.noCallback = noCallback;
         this.show();
     }
 
-    show() {
+    private show() {
 
         let rectangle = this.scene.add.rectangle(-2000, -2000, 4000, 4000,
-            0xffffff, 0.5).setOrigin(0, 0);
+            0xffffff, 0.5).setOrigin(0,0);
         rectangle.setInteractive();
 
 
@@ -43,11 +45,13 @@ export class OKDialog {
             }),
 
             content: this.scene.add.text(0, 0, this.text, {
-                fontSize: '20px'
+                fontSize: '24px'
+
             }),
 
             actions: [
-                createLabel(this.scene, 'باشه')
+                createLabel(this.scene, 'آره'),
+                createLabel(this.scene, 'نه')
             ],
 
             space: {
@@ -76,7 +80,12 @@ export class OKDialog {
         dialog.on("button.click", (button: any, groupName: any, index: number) => {
             if (index === 0) {
                 //Yes
-                this.okCallback()
+                this.yesCallback()
+                rectangle.destroy()
+                dialog.destroy()
+            } else if (index === 1) {
+                //No
+                this.noCallback()
                 rectangle.destroy()
                 dialog.destroy()
             }
@@ -86,7 +95,10 @@ export class OKDialog {
             button.getElement('background').setStrokeStyle();
         });
         dialog.setAlpha(0.75);
+
+
     }
+
 }
 
 function createLabel(scene: Scene, text: string) {

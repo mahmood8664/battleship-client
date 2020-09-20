@@ -1,25 +1,23 @@
 import {Scene} from "phaser";
 
-export class YesNoDialog {
+export class    OKDialog {
     private scene: Scene;
     private title: string;
     private text: string;
-    private yesCallback: Function;
-    private noCallback: Function;
+    private okCallback: Function;
 
-    constructor(scene: Scene, title: string, text: string, yesCallback: Function, noCallback: Function) {
+    constructor(scene: Scene, title: string, text: string, yesCallback: Function) {
         this.scene = scene;
         this.title = title;
         this.text = text;
-        this.yesCallback = yesCallback;
-        this.noCallback = noCallback;
+        this.okCallback = yesCallback;
         this.show();
     }
 
-    show() {
+    private show() {
 
         let rectangle = this.scene.add.rectangle(-2000, -2000, 4000, 4000,
-            0xffffff, 0.5).setOrigin(0,0);
+            0xffffff, 0.5).setOrigin(0, 0);
         rectangle.setInteractive();
 
 
@@ -45,13 +43,11 @@ export class YesNoDialog {
             }),
 
             content: this.scene.add.text(0, 0, this.text, {
-                fontSize: '24px'
-
+                fontSize: '20px'
             }),
 
             actions: [
-                createLabel(this.scene, 'آره'),
-                createLabel(this.scene, 'نه')
+                createLabel(this.scene, 'باشه')
             ],
 
             space: {
@@ -80,12 +76,7 @@ export class YesNoDialog {
         dialog.on("button.click", (button: any, groupName: any, index: number) => {
             if (index === 0) {
                 //Yes
-                this.yesCallback()
-                rectangle.destroy()
-                dialog.destroy()
-            } else if (index === 1) {
-                //No
-                this.noCallback()
+                this.okCallback()
                 rectangle.destroy()
                 dialog.destroy()
             }
@@ -95,10 +86,7 @@ export class YesNoDialog {
             button.getElement('background').setStrokeStyle();
         });
         dialog.setAlpha(0.75);
-
-
     }
-
 }
 
 function createLabel(scene: Scene, text: string) {
