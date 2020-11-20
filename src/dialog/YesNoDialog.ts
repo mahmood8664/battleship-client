@@ -18,8 +18,8 @@ export class YesNoDialog {
 
     private show() {
 
-        let rectangle = this.scene.add.rectangle(-2000, -2000, 4000, 4000,
-            0xffffff, 0.5).setOrigin(0,0);
+        let rectangle = this.scene.add.rectangle(-100, -100, 1500, 1500,
+            0xffffff, 0.5).setOrigin(0, 0);
         rectangle.setInteractive();
 
 

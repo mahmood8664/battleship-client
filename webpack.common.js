@@ -7,26 +7,22 @@ module.exports = {
     entry: './src/index.ts',
     module: {
         rules: [
+            // {
+            //     test: /\.(ts|tsx)$/i,
+            //     exclude: /node_modules/,
+            //     use: [
+            //         {
+            //             loader: 'babel-loader',
+            //         },
+            //         {
+            //             loader: 'ts-loader'
+            //         }
+            //     ]
+            // },
             {
-                test: /\.(ts|tsx)$/i,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                    },
-                    {
-                        loader: 'ts-loader'
-                    }
-                ]
-            },
-            {
-                test: /\.js$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                    }
-                ]
+                test: /\.(ts|tsx|js)$/i,
+                exclude: /(node_modules)/,
+                loader: 'babel-loader!ts-loader'
             },
             {
                 test: /\.(png|svg|jpe?g|gif|mp3)$/i,
@@ -35,6 +31,11 @@ module.exports = {
                 options: {
                     name: '[path][name].[ext]',
                 },
+            },
+            {
+                test: /\.html$/i,
+                use: ['file-loader?name=[name].[ext]', 'extract-loader', 'html-loader'],
+                exclude: /(index.*)/
             },
             // {
             //     enforce: 'pre',
@@ -47,7 +48,6 @@ module.exports = {
             //         failOnWarning: false,
             //     },
             // },
-
         ],
     },
     plugins: [
@@ -63,7 +63,7 @@ module.exports = {
     devServer: {
         contentBase: './dist',
         index: "index.html",
-        host: "0.0.0.0",
+        host: "192.168.1.118",
         port: 9000,
         open: true,
         writeToDisk: true,

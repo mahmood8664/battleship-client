@@ -1,6 +1,6 @@
 import {Scene} from "phaser";
 
-export class    OKDialog {
+export class OKDialog {
     private scene: Scene;
     private title: string;
     private text: string;
@@ -15,11 +15,9 @@ export class    OKDialog {
     }
 
     private show() {
-
-        let rectangle = this.scene.add.rectangle(-2000, -2000, 4000, 4000,
+        let rectangle = this.scene.add.rectangle(-100, -100, 1500, 1500,
             0xffffff, 0.5).setOrigin(0, 0);
         rectangle.setInteractive();
-
 
         // @ts-ignore
         let dialog = this.scene.rexUI.add.dialog({

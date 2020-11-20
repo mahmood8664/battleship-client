@@ -14,7 +14,7 @@
     "esModuleInterop": true,
 //    "declaration": true,
     "outDir": "ts-out",
-
+    "strictNullChecks": true,
     "allowSyntheticDefaultImports": true,
 //    "strictPropertyInitialization": false,
     "lib": [
@@ -34,8 +34,7 @@
     ]
   },
   "include": [
-    "src",
-    "node_modules/phaser/scripts/tsgen/test/src/game.ts"
+    "src"
   ],
   "exclude": [
     "node_modules"
