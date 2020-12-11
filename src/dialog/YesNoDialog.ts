@@ -46,12 +46,11 @@ export class YesNoDialog {
 
             content: this.scene.add.text(0, 0, this.text, {
                 fontSize: '24px'
-
             }),
 
             actions: [
-                createLabel(this.scene, 'آره'),
-                createLabel(this.scene, 'نه')
+                createLabel(this.scene, 'Yes'),
+                createLabel(this.scene, 'No')
             ],
 
             space: {

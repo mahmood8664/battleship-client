@@ -1,4 +1,3 @@
-import {MainScene} from "./scenes/MainScene";
 import {StartScene} from "./scenes/StartScene";
 // @ts-ignore
 import GesturesPlugin from "phaser3-rex-plugins/plugins/gestures-plugin.js";
@@ -8,8 +7,6 @@ import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 
 export let config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    // width: window.innerWidth,
-    // height: window.innerHeight,
     scale: {
         mode: Phaser.Scale.ScaleModes.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

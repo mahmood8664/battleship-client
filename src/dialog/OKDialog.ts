@@ -45,7 +45,7 @@ export class OKDialog {
             }),
 
             actions: [
-                createLabel(this.scene, 'باشه')
+                createLabel(this.scene, 'OK')
             ],
 
             space: {

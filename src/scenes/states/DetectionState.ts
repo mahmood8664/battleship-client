@@ -58,7 +58,7 @@ export class DetectionState extends BaseState {
                     sprite.setTintFill(0x121212);
                 });
 
-                new YesNoDialog(scene, "", "                مطمئنی؟", () => {
+                new YesNoDialog(scene, "", "Are you sure?                  ", () => {
                     targetNeighbors.forEach(sprite => {
                         sprite.setAlpha(0.01);
                         sprite.active = false;

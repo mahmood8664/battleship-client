@@ -4,10 +4,12 @@ export class RawEvent {
 }
 
 export enum EventType {
+    ///External Events
     OTHER_SIDE_CONNECT = 1,
-    ///Internal Events///
+    GAME_START = 2,
+    ///Internal Events
     SOCKET_CONNECT = 1000,
-    SOCKET_DISCONNECT = 1001,
+    SOCKET_DISCONNECT = 1001
 }
 
 export class Event {
@@ -23,4 +25,8 @@ export class Event {
 export class SocketConnect {
     game_id!: string
     user_id!: string
+}
+
+export class GameStart {
+    game_id!: string
 }

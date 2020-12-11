@@ -8,14 +8,19 @@ import "../../assets/ship.png"
 import "../../assets/direction.png"
 import "../../assets/loading.png"
 import "../../assets/message.png"
+import "../../assets/connect.png"
+import "../../assets/disconnect.png"
 import {Scene} from "phaser";
 import {GameState, StateManger} from "./states/StateManger";
+import {Socket} from "../api/socket";
+import {Timer} from "../util/Timer";
 import Sprite = Phaser.GameObjects.Sprite;
 import Group = Phaser.GameObjects.Group;
 import Image = Phaser.GameObjects.Image;
 import Rectangle = Phaser.GameObjects.Rectangle;
 import SettingsConfig = Phaser.Types.Scenes.SettingsConfig;
 import Text = Phaser.GameObjects.Text;
+import Orientation = Phaser.Scale.Orientation;
 
 const sceneConfig: SettingsConfig = {
     active: false,
@@ -43,7 +48,9 @@ export class MainScene extends Scene {
     private _loadingRectangle!: Rectangle;
     private _ships: Map<number, Image> = new Map<number, Image>();
     private readonly _stateManger: StateManger;
-    private text!: Text;
+    private _textBox!: Text;
+    private _connect!: Image;
+    private _disconnect!: Image;
 
     constructor() {
         super(sceneConfig);
@@ -119,7 +126,33 @@ export class MainScene extends Scene {
         this._loadingRectangle = value;
     }
 
-    //endregion
+
+    get textBox(): Phaser.GameObjects.Text {
+        return this._textBox;
+    }
+
+    set textBox(value: Phaser.GameObjects.Text) {
+        this._textBox = value;
+    }
+
+
+    get connect(): Phaser.GameObjects.Image {
+        return this._connect;
+    }
+
+    set connect(value: Phaser.GameObjects.Image) {
+        this._connect = value;
+    }
+
+    get disconnect(): Phaser.GameObjects.Image {
+        return this._disconnect;
+    }
+
+    set disconnect(value: Phaser.GameObjects.Image) {
+        this._disconnect = value;
+    }
+
+//endregion
 
     public preload() {
         this.load.image('blue-square', './assets/blue-square.png');
@@ -131,10 +164,13 @@ export class MainScene extends Scene {
         this.load.image('ship', './assets/ship.png');
         this.load.image('loading', './assets/loading.png');
         this.load.image('message', './assets/message.png');
+        this.load.image('connect', './assets/connect.png');
+        this.load.image('disconnect', './assets/disconnect.png');
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 130, frameHeight: 130});
     }
 
     public create() {
+        this.scale.orientation = Orientation.LANDSCAPE
         this._desktop = this.sys.game.device.os.desktop;
         this.pinch();
         this.createEnemyField();
@@ -145,16 +181,18 @@ export class MainScene extends Scene {
         this.createExplosionAnimation();
         this.createLoading();
         this.createTextBox();
+        this.createConnectionStatus();
+
+        ///
         this._stateManger.changeState(GameState.INIT_ARRANGE);
+        Socket.connect(localStorage.getItem("game_id")!, localStorage.getItem("user_id")!);
+        this.stateManger.SocketEventSubscribe();
     }
 
     public update() {
-
-
         if (this._gameState === GameState.WAITING) {
             this._loadingImage.angle += 2;
         }
-
     }
 
     private createEnemyField() {
@@ -372,7 +410,7 @@ export class MainScene extends Scene {
 
     private createTextBox() {
         this.add.image(870, 560, "message").setScale(0.8);
-        this.text = this.add.text(780, 420, "", {
+        this._textBox = this.add.text(780, 420, "", {
             color: '#1f3b1f',
             direction: 'rtl',
             wordWrap: {
@@ -382,8 +420,11 @@ export class MainScene extends Scene {
             alignment: 'right',
             fontSize: 16,
         }).setOrigin(0);
-        this.text.initRTL();
+        this._textBox.initRTL();
     }
 
-
+    private createConnectionStatus() {
+        this._connect = this.add.image(970, 50, "connect").setScale(0.5);
+        this._disconnect = this.add.image(970, 50, "disconnect").setScale(0.5).setVisible(false);
+    }
 }

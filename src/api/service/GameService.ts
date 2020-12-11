@@ -1,6 +1,8 @@
 import {Config} from "../../config/config";
 import {CreateGameRequest, CreateGameResponse} from "../../model/CreateGame";
 import {JoinGameRequest, JoinGameResponse} from "../../model/JoinGame";
+import {SubmitShipsLocationsRequest, SubmitShipsLocationsResponse} from "../../model/SubmitShipsLocaitons";
+import {GetGameResponse} from "../../model/GetGame";
 
 export class GameService {
 
@@ -12,7 +14,7 @@ export class GameService {
             headers: {
                 "Content-Type": "application/json"
             },
-        }).then(response => {
+        }).then<CreateGameResponse>(response => {
             if (response.ok) {
                 return response.json();
             } else {
@@ -42,7 +44,7 @@ export class GameService {
             headers: {
                 "Content-Type": "application/json"
             },
-        }).then(response => {
+        }).then<JoinGameResponse>(response => {
             if (response.ok) {
                 return response.json();
             } else {
@@ -63,4 +65,65 @@ export class GameService {
         } as JoinGameResponse));
 
     }
+
+    public static getGame(): Promise<GetGameResponse> {
+        let gameId = localStorage.getItem("game_id");
+        let userId = localStorage.getItem("user_id");
+        return fetch(Config.restUrl + "/game/" + gameId + "?user_id=" + userId, {
+            method: "get",
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        }).then<GetGameResponse>(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return {
+                    ok: false,
+                    error: {
+                        error_code: response.status,
+                        error_message: response.statusText
+                    }
+                } as JoinGameResponse
+            }
+        }).catch(reason => ({
+            ok: false,
+            error: {
+                error_code: -1,
+                error_message: reason.message,
+            }
+        } as GetGameResponse));
+    }
+
+
+    public static submitShipsLocations(request: SubmitShipsLocationsRequest): Promise<SubmitShipsLocationsResponse> {
+        return fetch(Config.restUrl + "/game/submit-ships", {
+            method: "post",
+            mode: "cors",
+            body: JSON.stringify(request),
+            headers: {
+                "Content-Type": "application/json"
+            },
+        }).then<SubmitShipsLocationsResponse>(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return {
+                    ok: false,
+                    error: {
+                        error_code: response.status,
+                        error_message: response.statusText
+                    }
+                } as SubmitShipsLocationsResponse
+            }
+        }).catch(reason => ({
+            ok: false,
+            error: {
+                error_code: -1,
+                error_message: reason.message,
+            }
+        } as SubmitShipsLocationsResponse));
+    }
+
 }

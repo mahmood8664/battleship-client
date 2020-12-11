@@ -3,7 +3,7 @@
         background: #eceeee;
         border: 1px solid #42464b;
         border-radius: 6px;
-        height: 300px;
+        height: 350px;
         margin: 20px auto 0;
         width: 298px;
         direction: ltr;
@@ -33,10 +33,10 @@
         color: #696969;
         height: 39px;
         margin: 31px 0 0 29px;
-        padding-left: 37px;
+        padding-left: 5px;
         transition: box-shadow 0.3s;
         width: 240px;
-        direction: rtl;
+        direction: ltr;
     }
 
     input[type="password"]:focus, input[type="text"]:focus {
@@ -107,10 +107,11 @@
 </style>
 
 <div class="login" id="div_create_game">
-    <label for="name"></label><input type="text" placeholder="نام" id="name" name="name">
-    <label for="cellphone"></label><input type="text" pattern="\\+98\\d{10}" placeholder="موبایل" id="cellphone" name="cellphone" disabled="disabled">
-    <input type="submit" value="ایجاد بازی جدید" id="create_game" name="create_game">
-    <input type="submit" value="پیوستن به بازی" id="join_game" name="join_game">
+    <label for="name"></label><input type="text" placeholder="Name" id="name" name="name">
+    <label for="timeout"></label><input type="text" placeholder="Timeout of each move - 10 to 100" id="timeout" name="timeout">
+    <label for="cellphone"></label><input type="text" pattern="\\+98\\d{10}" placeholder="Mobile" id="cellphone" name="cellphone" disabled="disabled">
+    <input type="submit" value="Create New Game" id="create_game" name="create_game">
+    <input type="submit" value="Join Game" id="join_game" name="join_game">
 </div>
 
 <div class="shadow"></div>

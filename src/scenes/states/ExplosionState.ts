@@ -39,7 +39,7 @@ export class ExplosionState extends BaseState {
                 scene.stateManger.changeState(GameState.PLAY);
             } else {
                 target.setTintFill(0x121212);
-                new YesNoDialog(scene, "", "                مطمئنی؟", () => {
+                new YesNoDialog(scene, "", "Are you sure?                  ", () => {
                     target.setAlpha(0.01);
                     target.setActive(false);
 

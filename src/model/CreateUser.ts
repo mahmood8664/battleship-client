@@ -1,7 +1,6 @@
 import {BaseResponse} from "./BaseResponse";
 
 export class CreateUserRequest {
-
     name?: string;
     mobile?: string;
 }

@@ -10,6 +10,7 @@ export abstract class BaseState {
         this.clearOwnField(scene);
         this.clearShips(scene);
         this.clearButtons(scene);
+        this.clearLoading(scene);
     }
 
     enemyFieldPointerHover(scene: MainScene, target: Sprite, targetNeighbors: Sprite[]): void {
@@ -87,6 +88,11 @@ export abstract class BaseState {
 
     protected clearShips(scene: MainScene) {
         scene.ships.forEach(value => value.clearTint());
+    }
+
+    protected clearLoading(scene: MainScene) {
+        scene.loadingRectangle.visible = false
+        scene.loadingImage.visible = false
     }
 
 }

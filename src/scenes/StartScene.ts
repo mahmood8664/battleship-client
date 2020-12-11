@@ -5,11 +5,11 @@ import {UserService} from "../api/service/UserService";
 import {GameService} from "../api/service/GameService";
 import {WaitingScene} from "./WaitingScene";
 import {Util} from "../util/Util";
+import {MainScene} from "./MainScene";
+import {Socket} from "../api/socket";
 import Rectangle = Phaser.GameObjects.Rectangle;
 import Image = Phaser.GameObjects.Image;
 import DOMElement = Phaser.GameObjects.DOMElement;
-import {MainScene} from "./MainScene";
-import {Socket} from "../api/socket";
 
 
 export class StartScene extends Scene {
@@ -28,7 +28,8 @@ export class StartScene extends Scene {
 
         this.toast = this.createToast();
         this.createGameElement = this.add.dom(500, 500).createFromCache("create_game");
-        this.createGameElement.visible = false;
+        this.createGameElement.visible = true;
+
         this.loadingRectangle = this.add.rectangle(-100, -100, 2500, 2500, 0x000000, 0.5);
         this.loadingImage = this.add.image((this.game.canvas.width / 2), this.game.canvas.height / 2, "loading").setScale(0.3);
         this.hideLoading();
@@ -38,6 +39,7 @@ export class StartScene extends Scene {
         if (joinGameId) {
             //if has user go to game directly
             if (localStorage.getItem("user_id")) {
+                this.showLoading();
                 this.joinGame(localStorage.getItem("user_id")!, joinGameId);
             } else {
                 this.createGameElement.visible = true;
@@ -65,27 +67,32 @@ export class StartScene extends Scene {
         this.createGameElement.addListener('click');
         this.createGameElement.on('click', (event: any) => {
             let inputName = this.createGameElement.getChildByName('name') as HTMLInputElement;
+            let timeoutElement = this.createGameElement.getChildByName('timeout') as HTMLInputElement;
+            let timeout: number = 20;
+            if (timeoutElement.value && +timeoutElement.value >= 10 && +timeoutElement.value <= 100) {
+                timeout = +timeoutElement.value;
+            }
+
             if (event.target.name === "create_game") {
                 // let inputCellphone = element.getChildByName('cellphone') as HTMLInputElement;
-                if (inputName.value !== '') {
-                    this.showLoading();
-                    if (userAlreadyCreated) {
-                        this.createGame(localStorage.getItem("user_id")!);
-                    } else {
-                        UserService.createUser({name: inputName.value}).then(response => {
-                            if (response.ok) {
-                                localStorage.setItem("user_name", inputName.value);
-                                localStorage.setItem("user_id", response.id!);
-                                this.createGame(response.id!);
-                            } else {
-                                this.toast.show("Error creating user: " + response.error?.error_code + " " + response.error?.error_message);
-                                this.hideLoading();
-                                this.flashElement(this.createGameElement);
-                            }
-                        });
-                    }
+                if (inputName.value === '') {
+                    this.toast.show("Enter your name");
+                    return;
+                }
+                this.showLoading();
+                if (userAlreadyCreated) {
+                    this.createGame(localStorage.getItem("user_id")!, timeout);
                 } else {
-                    this.flashElement(this.createGameElement);
+                    UserService.createUser({name: inputName.value}).then(response => {
+                        if (response.ok) {
+                            localStorage.setItem("user_name", inputName.value);
+                            localStorage.setItem("user_id", response.id!);
+                            this.createGame(response.id!, timeout);
+                        } else {
+                            this.toast.show("Error creating user: " + response.error?.error_code + " " + response.error?.error_message);
+                            this.hideLoading();
+                        }
+                    });
                 }
             } else if (event.target.name === "join_game") {
                 if (inputName.value !== '') {
@@ -131,14 +138,15 @@ export class StartScene extends Scene {
         this.tweens.add({targets: element, alpha: 0.1, duration: 200, ease: 'Power1', yoyo: true});
     }
 
-    private createGame(user_id: string) {
-        GameService.createGame({user_id: user_id}).then(response => {
+    private createGame(user_id: string, move_timeout: number) {
+        GameService.createGame({user_id: user_id, move_timeout: move_timeout}).then(response => {
             if (response.ok) {
-                localStorage.setItem("game_id", response.game_id!);
+                localStorage.setItem("game_id", response.game!.id);
+                localStorage.setItem("game", JSON.stringify(response.game!));
                 this.hideLoading();
+                window.history.pushState("join", "Join Game", "?join=" + response.game?.id)
                 this.scene.add("WaitingScene", new WaitingScene(), true)
                 this.createGameElement.visible = false;
-                window.history.pushState("join", "Join Game", "?join=" + response.game_id)
             } else {
                 this.toast.show("Error creating game: " + response.error?.error_code);
                 this.hideLoading();
@@ -152,11 +160,21 @@ export class StartScene extends Scene {
         GameService.joinGame({game_id: game_id, user_id: user_id}).then(response => {
             if (response.ok) {
                 localStorage.setItem("game_id", response.game?.id!);
-                this.scene.add("MainScene", new MainScene(), true);
+                localStorage.setItem("game", JSON.stringify(response.game));
+
+                if (response.game?.side_1_user === localStorage.getItem("user_id") && !response.game.side_2_user ||
+                    response.game?.side_2_user === localStorage.getItem("user_id") && !response.game.side_1_user) {
+                    this.scene.add("WaitingScene", new WaitingScene(), true)
+                } else {
+                    this.scene.add("MainScene", new MainScene(), true);
+                }
+
+                window.history.pushState("join", "Join Game", "?join=" + response.game?.id)
+
                 this.createGameElement.visible = false;
                 //
                 let socket: Socket = new Socket();
-                socket.connect(localStorage.getItem("game_id")!, localStorage.getItem("user_id")!);
+                Socket.connect(localStorage.getItem("game_id")!, localStorage.getItem("user_id")!);
                 //
             } else {
                 this.toast.show("Error creating game: " + response.error?.error_code);

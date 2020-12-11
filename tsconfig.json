@@ -16,7 +16,8 @@
     "outDir": "ts-out",
     "strictNullChecks": true,
     "allowSyntheticDefaultImports": true,
-//    "strictPropertyInitialization": false,
+    "downlevelIteration": true,
+    //    "strictPropertyInitialization": false,
     "lib": [
       "ES6",
       "DOM",
@@ -30,7 +31,8 @@
       "ES2015.Symbol",
       "ES2015.Symbol.WellKnown",
       "DOM.Iterable",
-      "ScriptHost"
+      "ScriptHost",
+      "WebWorker"
     ]
   },
   "include": [
