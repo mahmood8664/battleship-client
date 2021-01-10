@@ -18,15 +18,15 @@ export class YesNoDialog {
 
     private show() {
 
-        let rectangle = this.scene.add.rectangle(-100, -100, 1500, 1500,
+        let rectangle = this.scene.add.rectangle(-100, -100, 2000, 4000,
             0xffffff, 0.5).setOrigin(0, 0);
         rectangle.setInteractive();
 
 
         // @ts-ignore
         let dialog = this.scene.rexUI.add.dialog({
-            x: 400,
-            y: 300,
+            x: 360,
+            y: 500,
             // @ts-ignore
             background: this.scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x1565c0),
             // @ts-ignore

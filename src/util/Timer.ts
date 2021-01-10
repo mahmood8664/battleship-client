@@ -1,12 +1,15 @@
-import {Scene} from "phaser";
+import {GameService} from "../api/service/GameService";
+import {MainScene} from "../scenes/MainScene";
+import {GameState} from "../scenes/states/StateManger";
 import Rectangle = Phaser.GameObjects.Rectangle;
 
 export class Timer {
-    private readonly _scene: Scene;
+    private readonly _scene: MainScene;
     private _timer!: number;
     private _progressBar: Rectangle;
+    private _interval!: number
 
-    constructor(scene: Phaser.Scene) {
+    constructor(scene: MainScene) {
         this._scene = scene;
         this._progressBar = this.scene.add.rectangle(35, 20, 0, 0, 0x00FFFF).setOrigin(0, 0);
     }
@@ -19,22 +22,42 @@ export class Timer {
         return this._timer;
     }
 
-    public startVisualTimer(value: number, callback: Function, param: any) {
+    public startTimer(value: number, callback: Function, param?: any) {
+        this.finishTimer();
         this._timer = value;
         let passed = 1;
-        this._progressBar.setSize(695, 10);
-        let interval = setInterval(() => {
-            console.log(passed);
-            this._progressBar.setSize(this._progressBar.width - 695 / value, 10);
+        this._progressBar.setSize(545, 10);
+        this._interval = window.setInterval(() => {
+            this._progressBar.setSize(this._progressBar.width - 545 / value, 10);
             if (passed == value) {
-                callback(param);
+                clearInterval(this._interval);
                 this._progressBar.setSize(0, 0);
-                clearInterval(interval);
+                callback(param);
             }
             passed++;
         }, 1000);
-
     }
 
+    public finishTimer() {
+        if (this._interval) {
+            clearInterval(this._interval);
+        }
+        this._progressBar.setSize(0, 0);
+    }
+
+    public startTimerAndChangeTurn(value: number) {
+        this.startTimer(value, () => {
+            GameService.changeTurn({
+                user_id: localStorage.getItem("user_id")!,
+                game_id: localStorage.getItem("game_id")!
+            }).then(response => {
+                if (response.ok) {
+                    this._scene.stateManger.changeState(GameState.WAITING);
+                } else {
+                    this._scene.toast.show("Error: " + response.error?.error_message);
+                }
+            });
+        });
+    }
 
 }

@@ -7,9 +7,10 @@ import "../../assets/rounded-square.png"
 import "../../assets/ship.png"
 import "../../assets/direction.png"
 import "../../assets/loading.png"
-import "../../assets/message.png"
 import "../../assets/connect.png"
 import "../../assets/disconnect.png"
+import "../../assets/exploded.png"
+import "../../assets/explosion.mp3"
 import {Scene} from "phaser";
 import {GameState, StateManger} from "./states/StateManger";
 import {Socket} from "../api/socket";
@@ -20,7 +21,8 @@ import Image = Phaser.GameObjects.Image;
 import Rectangle = Phaser.GameObjects.Rectangle;
 import SettingsConfig = Phaser.Types.Scenes.SettingsConfig;
 import Text = Phaser.GameObjects.Text;
-import Orientation = Phaser.Scale.Orientation;
+import BaseSound = Phaser.Sound.BaseSound;
+import {Util} from "../util/Util";
 
 const sceneConfig: SettingsConfig = {
     active: false,
@@ -29,10 +31,6 @@ const sceneConfig: SettingsConfig = {
 };
 
 export class MainScene extends Scene {
-    get stateManger(): StateManger {
-        return this._stateManger;
-    }
-
     private _numberOfShips = 10;
     private _enemyField!: Group;
     private _ownField!: Group;
@@ -47,10 +45,14 @@ export class MainScene extends Scene {
     private _loadingImage!: Image;
     private _loadingRectangle!: Rectangle;
     private _ships: Map<number, Image> = new Map<number, Image>();
+    private _revealed_ships: Map<number, Image> = new Map<number, Image>();
     private readonly _stateManger: StateManger;
     private _textBox!: Text;
     private _connect!: Image;
     private _disconnect!: Image;
+    private _timer!: Timer;
+    private _toast!: any;
+    private _explosionSound!: BaseSound;
 
     constructor() {
         super(sceneConfig);
@@ -135,7 +137,6 @@ export class MainScene extends Scene {
         this._textBox = value;
     }
 
-
     get connect(): Phaser.GameObjects.Image {
         return this._connect;
     }
@@ -152,6 +153,30 @@ export class MainScene extends Scene {
         this._disconnect = value;
     }
 
+    get timer(): Timer {
+        return this._timer;
+    }
+
+    set timer(value: Timer) {
+        this._timer = value;
+    }
+
+    get toast(): any {
+        return this._toast;
+    }
+
+    get stateManger(): StateManger {
+        return this._stateManger;
+    }
+
+    get revealed_ships(): Map<number, Phaser.GameObjects.Image> {
+        return this._revealed_ships;
+    }
+
+    set revealed_ships(value: Map<number, Phaser.GameObjects.Image>) {
+        this._revealed_ships = value;
+    }
+
 //endregion
 
     public preload() {
@@ -163,14 +188,15 @@ export class MainScene extends Scene {
         this.load.image('direction', './assets/direction.png');
         this.load.image('ship', './assets/ship.png');
         this.load.image('loading', './assets/loading.png');
-        this.load.image('message', './assets/message.png');
         this.load.image('connect', './assets/connect.png');
         this.load.image('disconnect', './assets/disconnect.png');
+        this.load.image('exploded', './assets/exploded.png');
+        this.load.audio("explosion", "./assets/explosion.mp3")
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 130, frameHeight: 130});
+        this._toast = this.createToast();
     }
 
     public create() {
-        this.scale.orientation = Orientation.LANDSCAPE
         this._desktop = this.sys.game.device.os.desktop;
         this.pinch();
         this.createEnemyField();
@@ -179,18 +205,21 @@ export class MainScene extends Scene {
         this.createCannonBtn();
         this.createDirectionBtn();
         this.createExplosionAnimation();
-        this.createLoading();
         this.createTextBox();
         this.createConnectionStatus();
-
-        ///
-        this._stateManger.changeState(GameState.INIT_ARRANGE);
+        this.createLoading();
+        //
+        Util.PromptRefreshBrowser();
+        //
         Socket.connect(localStorage.getItem("game_id")!, localStorage.getItem("user_id")!);
-        this.stateManger.SocketEventSubscribe();
+        this._stateManger.SocketEventSubscribe();
+        this._timer = new Timer(this);
+        this._explosionSound = this.sound.add("explosion");
+        this._stateManger.changeState(GameState.INIT_ARRANGE);
     }
 
     public update() {
-        if (this._gameState === GameState.WAITING) {
+        if (this.loadingImage.visible && this.loadingRectangle.visible) {
             this._loadingImage.angle += 2;
         }
     }
@@ -198,18 +227,18 @@ export class MainScene extends Scene {
     private createEnemyField() {
         this._enemyField = this.add.group(undefined, {
             key: "blue-square",
-            repeat: 199,
-            "setScale.x": 0.15,
-            "setScale.y": 0.15,
+            repeat: 99,
+            "setScale.x": 0.25,
+            "setScale.y": 0.25,
         }).setOrigin(0, 0)
 
         Phaser.Actions.GridAlign(this._enemyField.getChildren(), {
-            x: 150,
-            y: 150,
-            height: 10,
-            width: 20,
-            cellWidth: 35,
-            cellHeight: 35,
+            x: 160,
+            y: 170,
+            height: 20,
+            width: 10,
+            cellWidth: 55,
+            cellHeight: 55,
             position: Phaser.Display.Align.CENTER
         });
         this.enemyFieldMouseEventHandler();
@@ -221,7 +250,7 @@ export class MainScene extends Scene {
             let neighbors = this.findNeighbors(indexOf);
             value.on('pointerover', () => this._stateManger.enemyFieldPointerHover(value as Sprite, neighbors));
             value.on("pointerout", () => this._stateManger.enemyFieldPointerOut(value as Sprite, neighbors));
-            value.on("pointerup", () => this._stateManger.enemyFieldPointerUp(value as Sprite, neighbors));
+            value.on("pointerup", () => this._stateManger.enemyFieldPointerUp(value as Sprite, neighbors, indexOf));
         });
 
     }
@@ -237,22 +266,22 @@ export class MainScene extends Scene {
 
     private static findNeighborIndexes(indexOf: number): number[] {
         let index1 = indexOf + 1;
-        let index2 = indexOf + 20;
-        let index3 = indexOf + 21;
-        if (indexOf > 0 && (indexOf + 1) % 20 == 0) {
+        let index2 = indexOf + 10;
+        let index3 = indexOf + 11;
+        if (indexOf > 0 && (indexOf + 1) % 10 == 0) {
             index1 = indexOf - 1;
-            index2 = indexOf + 19;
-            index3 = indexOf + 20;
+            index2 = indexOf + 9;
+            index3 = indexOf + 10;
         }
-        if (indexOf + 1 > 9 * 20) {
+        if (indexOf + 1 > 9 * 10) {
             index1 = indexOf + 1;
-            index2 = indexOf - 19;
-            index3 = indexOf - 20;
+            index2 = indexOf - 9;
+            index3 = indexOf - 10;
         }
-        if (indexOf == 199) {
-            index1 = 198;
-            index2 = 199 - 20;
-            index3 = 199 - 21;
+        if (indexOf == 99) {
+            index1 = 98;
+            index2 = 99 - 10;
+            index3 = 99 - 11;
         }
         return [indexOf, index1, index2, index3];
     }
@@ -260,18 +289,18 @@ export class MainScene extends Scene {
     private createOwnField() {
         this._ownField = this.add.group(undefined, {
             key: "red-square",
-            repeat: 199,
-            "setScale.x": 0.15,
-            "setScale.y": 0.15,
+            repeat: 99,
+            "setScale.x": 0.25,
+            "setScale.y": 0.25,
         }).setOrigin(0, 0)
 
         Phaser.Actions.GridAlign(this._ownField.getChildren(), {
-            x: 150,
-            y: 500,
-            height: 10,
-            width: 20,
-            cellWidth: 35,
-            cellHeight: 35,
+            x: 160,
+            y: 720,
+            height: 20,
+            width: 10,
+            cellWidth: 55,
+            cellHeight: 55,
             position: Phaser.Display.Align.CENTER
         });
         this.ownFieldMouseHandler()
@@ -282,19 +311,19 @@ export class MainScene extends Scene {
             let child = value as Sprite;
             let indexOf = this._ownField?.getChildren().indexOf(value) ?? -1;
             child.setInteractive();
-            child.on("pointerover", () => this.stateManger.ownFieldPointerHover(child, indexOf))
-                .on("pointerout", () => this.stateManger.ownFieldPointerOut(child, indexOf))
-                .on("pointerup", () => this.stateManger.ownFieldPointerUp(child, indexOf));
+            child.on("pointerover", () => this._stateManger.ownFieldPointerHover(child, indexOf))
+                .on("pointerout", () => this._stateManger.ownFieldPointerOut(child, indexOf))
+                .on("pointerup", () => this._stateManger.ownFieldPointerUp(child, indexOf));
         })
     }
 
     private createFourSquareBtn() {
-        this.add.image(800, 100, "rounded-square").setScale(0.12);
-        this._fourSquareBtn = this.add.image(800, 100, "four-square").setScale(0.35);
+        this.add.image(650, 110, "rounded-square").setScale(0.13);
+        this._fourSquareBtn = this.add.image(650, 110, "four-square").setScale(0.4);
         this._fourSquareBtn.on("pointerover", () => {
-            this._fourSquareBtn?.setScale(0.40);
+            this._fourSquareBtn?.setScale(0.45);
         }).on("pointerout", () => {
-            this._fourSquareBtn?.setScale(0.35);
+            this._fourSquareBtn?.setScale(0.4);
         }).on("pointerup", () => {
             this._stateManger.changeState(GameState.DETECTION);
         })
@@ -302,10 +331,10 @@ export class MainScene extends Scene {
     }
 
     private createCannonBtn() {
-        this.add.image(800, 210, "rounded-square").setScale(0.12);
-        this._cannonBtn = this.add.image(800, 210, "cannon").setScale(0.30).setTintFill(0x000000);
+        this.add.image(650, 230, "rounded-square").setScale(0.13);
+        this._cannonBtn = this.add.image(650, 230, "cannon").setScale(0.30).setTintFill(0x000000);
         this._cannonBtn.on("pointerover", () => {
-            this._cannonBtn?.setScale(0.32);
+            this._cannonBtn?.setScale(0.35);
         }, this).on("pointerout", () => {
             this._cannonBtn?.setScale(0.30);
         }, this).on("pointerup", () => {
@@ -316,10 +345,10 @@ export class MainScene extends Scene {
     }
 
     private createDirectionBtn() {
-        this.add.image(800, 320, "rounded-square").setScale(0.12);
-        this._directionBtn = this.add.image(800, 320, "direction").setScale(0.17).setTintFill(0x000000);
+        this.add.image(650, 350, "rounded-square").setScale(0.13);
+        this._directionBtn = this.add.image(650, 350, "direction").setScale(0.17).setTintFill(0x000000);
         this._directionBtn.on("pointerover", () => {
-            this._directionBtn?.setScale(0.19);
+            this._directionBtn?.setScale(0.20);
         }, this).on("pointerout", () => {
             this._directionBtn?.setScale(0.17);
         }, this).on("pointerup", () => {
@@ -334,7 +363,7 @@ export class MainScene extends Scene {
             // @ts-ignore
             let pinch = this.rexGestures.add.pinch();
             let camera = this.cameras.main;
-            camera.setBounds(0, 0, 1000, 750)
+            camera.setBounds(0, 0, 720, 1280)
             pinch.on('drag1', (pinch: any) => {
                 this._pinchOrDrag = true;
                 let drag1Vector = pinch.drag1Vector;
@@ -347,14 +376,14 @@ export class MainScene extends Scene {
                     camera.zoom *= scaleFactor;
                 }
             }, this).on('pinchend', () => {
-                setTimeout(() => {
+                window.setTimeout(() => {
                     this._pinchOrDrag = false;
-                }, 300)
+                }, 300);
             }, this).on('drag1end', () => {
-                setTimeout(() => {
+                window.setTimeout(() => {
                     this._pinchOrDrag = false;
-                }, 300)
-            }, this)
+                }, 300);
+            }, this);
         }
     }
 
@@ -369,7 +398,7 @@ export class MainScene extends Scene {
             repeat: 0,
             hideOnComplete: true
         });
-        this._explosionSprite = this.add.sprite(500, 300, 'explosion').setScale(0.5).setVisible(false);
+        this._explosionSprite = this.add.sprite(500, 300, 'explosion').setVisible(false);
 
         this.anims.create({
             key: 'explosionEmpty',
@@ -379,7 +408,7 @@ export class MainScene extends Scene {
             repeat: 0,
             hideOnComplete: true
         });
-        this._explosionEmptySprite = this.add.sprite(600, 300, 'explosionEmpty').setScale(0.5).setVisible(false);
+        this._explosionEmptySprite = this.add.sprite(600, 300, 'explosionEmpty').setVisible(false);
     }
 
     playExplosion(x: number, y: number) {
@@ -388,6 +417,7 @@ export class MainScene extends Scene {
             this._explosionSprite.x = x;
             this._explosionSprite.y = y;
             this._explosionSprite.anims.play("explosion");
+            this._explosionSound.play();
         }
     }
 
@@ -401,30 +431,56 @@ export class MainScene extends Scene {
     }
 
     createLoading() {
-        this._loadingRectangle = this.add.rectangle(-100, -100, 2500, 2500, 0x000000, 0.5);
-        this._loadingImage = this.add.image((this.game.canvas.width / 2) - 124, this.game.canvas.height / 2, "loading").setScale(0.3);
+        this._loadingRectangle = this.add.rectangle(-100, -100, 2000, 4000, 0x000000, 0.5);
+        this._loadingImage = this.add.image((this.game.canvas.width / 2), this.game.canvas.height / 2, "loading").setScale(0.3);
         this._loadingRectangle.setInteractive();
         this._loadingRectangle.setVisible(false);
         this._loadingImage.setVisible(false);
+        this._loadingImage.depth = 1001;
+        this._loadingRectangle.depth = 1000;
     }
 
     private createTextBox() {
-        this.add.image(870, 560, "message").setScale(0.8);
-        this._textBox = this.add.text(780, 420, "", {
-            color: '#1f3b1f',
+        this.add.rectangle(360, 1230, 720, 150, 0x000000);
+        this._textBox = this.add.text(50, 1190, "", {
+            color: '#FFFFFF',
             direction: 'rtl',
             wordWrap: {
-                width: 200
+                width: 700
             },
-            maxLines: 15,
+            maxLines: 2,
             alignment: 'right',
-            fontSize: 16,
+            fontSize: 25,
         }).setOrigin(0);
         this._textBox.initRTL();
     }
 
     private createConnectionStatus() {
-        this._connect = this.add.image(970, 50, "connect").setScale(0.5);
-        this._disconnect = this.add.image(970, 50, "disconnect").setScale(0.5).setVisible(false);
+        this._connect = this.add.image(700, 20, "connect").setScale(0.3);
+        this._disconnect = this.add.image(700, 20, "disconnect").setScale(0.3).setVisible(false);
+    }
+
+    private createToast(): any {
+        // @ts-ignore
+        return this.rexUI.add.toast({
+            x: 350,
+            y: 1200,
+            // @ts-ignore
+            background: this.rexUI.add.roundRectangle(0, 0, 2, 2, 20, 0x4e342e),
+            text: this.add.text(0, 0, '', {
+                fontSize: '24px'
+            }),
+            space: {
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: 20,
+            },
+            duration: {
+                in: 200,
+                hold: 1500,
+                out: 200,
+            },
+        })
     }
 }

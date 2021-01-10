@@ -3,6 +3,17 @@ import {CreateGameRequest, CreateGameResponse} from "../../model/CreateGame";
 import {JoinGameRequest, JoinGameResponse} from "../../model/JoinGame";
 import {SubmitShipsLocationsRequest, SubmitShipsLocationsResponse} from "../../model/SubmitShipsLocaitons";
 import {GetGameResponse} from "../../model/GetGame";
+import {ChangeTurnRequest, ChangeTurnResponse} from "../../model/ChangeTurn";
+import {MoveShipRequest, MoveShipResponse} from "../../model/MoveShip";
+import {RevealEnemyFieldsRequest, RevealEnemyFieldsResponse} from "../../model/RevealEnemyFields";
+import {ExplodeRequest, ExplodeResponse} from "../../model/Explode";
+
+export enum ServerErrorCodes {
+    SHIP_INVALID_MOVE,
+    INVALID_GAME_STATUS,
+    INVALID_SHIP_INDEX_VALUE,
+    GAME_IS_FINISHED,
+}
 
 export class GameService {
 
@@ -14,25 +25,15 @@ export class GameService {
             headers: {
                 "Content-Type": "application/json"
             },
-        }).then<CreateGameResponse>(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return {
-                    ok: false,
-                    error: {
-                        error_code: response.status,
-                        error_message: response.statusText
-                    }
-                } as CreateGameResponse
-            }
+        }).then(response => {
+            return response.json();
         }).catch(reason => ({
             ok: false,
             error: {
                 error_code: -1,
                 error_message: reason.message,
             }
-        } as CreateGameResponse));
+        }));
 
     }
 
@@ -44,25 +45,15 @@ export class GameService {
             headers: {
                 "Content-Type": "application/json"
             },
-        }).then<JoinGameResponse>(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return {
-                    ok: false,
-                    error: {
-                        error_code: response.status,
-                        error_message: response.statusText
-                    }
-                } as JoinGameResponse
-            }
+        }).then(response => {
+            return response.json();
         }).catch(reason => ({
             ok: false,
             error: {
                 error_code: -1,
                 error_message: reason.message,
             }
-        } as JoinGameResponse));
+        }));
 
     }
 
@@ -75,25 +66,15 @@ export class GameService {
             headers: {
                 "Content-Type": "application/json"
             },
-        }).then<GetGameResponse>(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return {
-                    ok: false,
-                    error: {
-                        error_code: response.status,
-                        error_message: response.statusText
-                    }
-                } as JoinGameResponse
-            }
+        }).then(response => {
+            return response.json();
         }).catch(reason => ({
             ok: false,
             error: {
                 error_code: -1,
                 error_message: reason.message,
             }
-        } as GetGameResponse));
+        }));
     }
 
 
@@ -105,25 +86,91 @@ export class GameService {
             headers: {
                 "Content-Type": "application/json"
             },
-        }).then<SubmitShipsLocationsResponse>(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return {
-                    ok: false,
-                    error: {
-                        error_code: response.status,
-                        error_message: response.statusText
-                    }
-                } as SubmitShipsLocationsResponse
-            }
+        }).then(response => {
+            return response.json();
         }).catch(reason => ({
             ok: false,
             error: {
                 error_code: -1,
                 error_message: reason.message,
             }
-        } as SubmitShipsLocationsResponse));
+        }));
     }
 
+    public static changeTurn(request: ChangeTurnRequest): Promise<ChangeTurnResponse> {
+        return fetch(Config.restUrl + "/game/change-turn", {
+            method: "post",
+            mode: "cors",
+            body: JSON.stringify(request),
+            headers: {
+                "Content-Type": "application/json"
+            },
+        }).then<ChangeTurnResponse>(response => {
+            return response.json();
+        }).catch(reason => ({
+            ok: false,
+            error: {
+                error_code: -1,
+                error_message: reason.message,
+            }
+        }));
+    }
+
+    public static moveShip(request: MoveShipRequest): Promise<MoveShipResponse> {
+        return fetch(Config.restUrl + "/game/move-ship", {
+            method: "post",
+            mode: "cors",
+            body: JSON.stringify(request),
+            headers: {
+                "Content-Type": "application/json"
+            },
+        }).then(response => {
+            return response.json();
+        }).catch(reason => ({
+            ok: false,
+            error: {
+                error_code: -1,
+                error_message: reason.message,
+            }
+        }));
+    }
+
+    public static reveal(request: RevealEnemyFieldsRequest): Promise<RevealEnemyFieldsResponse> {
+        return fetch(Config.restUrl + "/game/reveal", {
+            method: "post",
+            mode: "cors",
+            body: JSON.stringify(request),
+            headers: {
+                "Content-Type": "application/json"
+            },
+        }).then(response => {
+            return response.json();
+        }).catch(reason => ({
+            ok: false,
+            error: {
+                error_code: -1,
+                error_message: reason.message,
+            }
+        }));
+    }
+
+
+    public static explode(request: ExplodeRequest): Promise<ExplodeResponse> {
+        return fetch(Config.restUrl + "/game/explode", {
+            method: "post",
+            mode: "cors",
+            body: JSON.stringify(request),
+            headers: {
+                "Content-Type": "application/json"
+            },
+        }).then(response => {
+            return response.json();
+        }).catch(reason => ({
+            ok: false,
+            error: {
+                error_code: -1,
+                error_message: reason.message,
+            }
+        }));
+    }
 }

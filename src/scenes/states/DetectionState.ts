@@ -1,7 +1,7 @@
 import {MainScene} from "../MainScene";
-import {YesNoDialog} from "../../dialog/YesNoDialog";
 import {BaseState} from "./BaseState";
 import {GameState} from "./StateManger";
+import {GameService} from "../../api/service/GameService";
 import Sprite = Phaser.GameObjects.Sprite;
 
 export class DetectionState extends BaseState {
@@ -9,16 +9,18 @@ export class DetectionState extends BaseState {
         super.changeState(scene);
         scene.gameState = GameState.DETECTION;
 
-        this.enableEnemyField(scene);
-        this.enableGameButtons(scene);
-        this.disableOwnField(scene);
+        this.enableEnemyFieldInteractive(scene);
+        this.enableGameButtonsInteractive(scene);
+        this.disableOwnFieldInteractive(scene);
         scene.fourSquareBtn.setTintFill(0xFFFFFF);
     }
 
     enemyFieldPointerHover(scene: MainScene, target: Sprite, targetNeighbors: Sprite[]): void {
         if (scene.desktop) {
             targetNeighbors.forEach(sprite => {
-                sprite.setTintFill(0x0e4293)
+                if (sprite.active) {
+                    sprite.setTintFill(0x0e4293);
+                }
             });
         }
     }
@@ -33,7 +35,7 @@ export class DetectionState extends BaseState {
         }
     }
 
-    enemyFieldPointerUp(scene: MainScene, target: Sprite, targetNeighbors: Sprite[]): void {
+    enemyFieldPointerUp(scene: MainScene, target: Sprite, targetNeighbors: Sprite[], indexOf: number): void {
 
         let oneOf4IsActive = false;
         targetNeighbors.forEach(value => {
@@ -44,37 +46,30 @@ export class DetectionState extends BaseState {
         });
 
         if (oneOf4IsActive) {
-            if (scene.desktop) {
-                //todo: do action here
-                targetNeighbors.forEach(sprite => {
-                    sprite.setAlpha(0.01);
-                    sprite.active = false;
-                });
-                scene.stateManger.changeState(GameState.PLAY);
-
-            } else {
-                //Mobile
-                targetNeighbors.forEach(sprite => {
-                    sprite.setTintFill(0x121212);
-                });
-
-                new YesNoDialog(scene, "", "Are you sure?                  ", () => {
+            scene.stateManger.changeState(GameState.WAITING);
+            GameService.reveal({
+                game_id: localStorage.getItem("game_id")!,
+                user_id: localStorage.getItem("user_id")!,
+                index: indexOf,
+            }).then(response => {
+                if (response.ok) {
                     targetNeighbors.forEach(sprite => {
-                        sprite.setAlpha(0.01);
+                        sprite.setAlpha(0.001);
                         sprite.active = false;
-
-                        //todo: do your action here
                     });
-                    scene.stateManger.changeState(GameState.PLAY);
-                }, () => {
-                    targetNeighbors.forEach(sprite => {
-                        sprite.clearTint();
+                    response.revealed_ship_indexes?.forEach(index => {
+                        scene.revealed_ships.set(index, scene.add.image((scene.enemyField.getChildren()[index] as Sprite).x,
+                            (scene.enemyField.getChildren()[index] as Sprite).y, "ship").setScale(0.5));
                     });
-
-                });
-            }
+                    scene.stateManger.changeState(GameState.WAITING);
+                } else {
+                    this.handleServerError(scene, response);
+                }
+                scene.stateManger.changeState(GameState.WAITING);
+            });
         }
     }
+
 }
 
 

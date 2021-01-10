@@ -1,5 +1,16 @@
 import {Config} from "../config/config";
-import {Event, EventType, GameStart, RawEvent, SocketConnect} from "../model/Event";
+import {
+    ChangeTurnEvent,
+    EndGameEvent,
+    Event,
+    EventType,
+    ExplosionEvent,
+    GameStartEvent,
+    RawEvent,
+    RevealEvent,
+    ShipMovedEvent,
+    SocketConnectEvent
+} from "../model/SocketEvent";
 
 export class Socket {
 
@@ -14,26 +25,25 @@ export class Socket {
     public static connect(gameId: string, userId: string): WebSocket {
         if (!Socket._webSocket || Socket._webSocket.readyState != WebSocket.OPEN) {
             Socket._webSocket = new WebSocket(Config.socketUrl + "?game_id=" + gameId + "&user_id=" + userId);
-            Socket._webSocket.onopen = ev => {
-                console.log("open socket");
-                let raw = new RawEvent()
-                raw.event_type = EventType.SOCKET_CONNECT
-                raw.payload = ""
+            Socket._webSocket.onopen = () => {
+                let raw: RawEvent = {
+                    event_type: EventType.INTERNAL_SOCKET_CONNECT,
+                    payload: "",
+                };
                 Socket.publish(JSON.stringify(raw))
             };
 
             Socket._webSocket.onmessage = ev => {
-                console.log("message:" + ev.data);
                 Socket.publish(ev.data);
             };
 
-            Socket._webSocket.onclose = ev => {
-                console.log('Socket is closed. Reconnect will be attempted in 1 second.', ev.reason);
-                let raw = new RawEvent()
-                raw.event_type = EventType.SOCKET_DISCONNECT
-                raw.payload = ""
+            Socket._webSocket.onclose = () => {
+                let raw: RawEvent = {
+                    event_type: EventType.INTERNAL_SOCKET_DISCONNECT,
+                    payload: "",
+                };
                 Socket.publish(JSON.stringify(raw))
-                setTimeout(() => this.connect(gameId, userId), 1000);
+                window.setTimeout(() => this.connect(gameId, userId), 1000);
             };
 
             Socket._webSocket.onerror = err => {
@@ -57,22 +67,42 @@ export class Socket {
     }
 
     private static publish(message: string) {
-        let rawEvent: RawEvent = JSON.parse(message)
-        let event: Event
+        let rawEvent: RawEvent = JSON.parse(message);
+        let event: Event;
         switch (rawEvent.event_type) {
             case EventType.OTHER_SIDE_CONNECT:
-                let socketConnect: SocketConnect = JSON.parse(rawEvent.payload);
-                event = new Event(EventType.OTHER_SIDE_CONNECT, socketConnect);
+                let socketConnect: SocketConnectEvent = JSON.parse(rawEvent.payload);
+                event = {eventType: rawEvent.event_type, object: socketConnect};
                 break;
             case EventType.GAME_START:
-                let gameStart: GameStart = JSON.parse(rawEvent.payload);
-                event = new Event(EventType.GAME_START, gameStart);
+                let gameStart: GameStartEvent = JSON.parse(rawEvent.payload);
+                event = {eventType: rawEvent.event_type, object: gameStart};
                 break;
-            case EventType.SOCKET_CONNECT:
-                event = new Event(EventType.SOCKET_CONNECT, null)
+            case EventType.CHANGE_TURN:
+                let changeTurn: ChangeTurnEvent = JSON.parse(rawEvent.payload);
+                event = {eventType: rawEvent.event_type, object: changeTurn};
                 break;
-            case EventType.SOCKET_DISCONNECT:
-                event = new Event(EventType.SOCKET_DISCONNECT, null)
+            case EventType.SHIP_MOVED:
+                let shipMoved: ShipMovedEvent = JSON.parse(rawEvent.payload);
+                event = {eventType: rawEvent.event_type, object: shipMoved};
+                break;
+            case EventType.REVEAL:
+                let revealEvent: RevealEvent = JSON.parse(rawEvent.payload);
+                event = {eventType: rawEvent.event_type, object: revealEvent};
+                break;
+            case EventType.EXPLOSION:
+                let explosionEvent: ExplosionEvent = JSON.parse(rawEvent.payload);
+                event = {eventType: rawEvent.event_type, object: explosionEvent};
+                break;
+            case EventType.END_GAME:
+                let endGameEvent: EndGameEvent = JSON.parse(rawEvent.payload);
+                event = {eventType: rawEvent.event_type, object: endGameEvent};
+                break;
+            case EventType.INTERNAL_SOCKET_CONNECT:
+                event = {eventType: rawEvent.event_type, object: undefined};
+                break;
+            case EventType.INTERNAL_SOCKET_DISCONNECT:
+                event = {eventType: rawEvent.event_type, object: undefined};
                 break;
 
         }

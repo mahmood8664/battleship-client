@@ -3,25 +3,11 @@
         background: #eceeee;
         border: 1px solid #42464b;
         border-radius: 6px;
-        height: 350px;
+        height: 400px;
         margin: 20px auto 0;
-        width: 298px;
+        width: 400px;
         direction: ltr;
-    }
-
-    .login h1 {
-        background-image: linear-gradient(top, #f1f3f3, #d4dae0);
-        border-bottom: 1px solid #a6abaf;
-        border-radius: 6px 6px 0 0;
-        box-sizing: border-box;
-        color: #727678;
-        display: block;
-        height: 43px;
-        font: 600 14px/1 'Open Sans', sans-serif;
-        padding-top: 14px;
-        margin: 0;
-        text-align: center;
-        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 #fff;
+        zoom: 1.4;
     }
 
     input[type="password"], input[type="text"] {
@@ -31,12 +17,13 @@
         box-shadow: 0 1px #fff;
         box-sizing: border-box;
         color: #696969;
-        height: 39px;
+        height: 50px;
         margin: 31px 0 0 29px;
         padding-left: 5px;
         transition: box-shadow 0.3s;
-        width: 240px;
+        width: 350px;
         direction: ltr;
+        font-size: 20px;
     }
 
     input[type="password"]:focus, input[type="text"]:focus {
@@ -45,11 +32,11 @@
     }
 
     input[type="submit"] {
-        width: 240px;
-        height: 35px;
+        width: 350px;
+        height: 50px;
         display: block;
         font-family: Arial, "Helvetica", sans-serif;
-        font-size: 16px;
+        font-size: 20px;
         font-weight: bold;
         color: #fff;
         text-decoration: none;
@@ -68,11 +55,11 @@
     }
 
     input[type="submit"]:disabled {
-        width: 240px;
-        height: 35px;
+        width: 350px;
+        height: 50px;
         display: block;
         font-family: Arial, "Helvetica", sans-serif;
-        font-size: 16px;
+        font-size: 20px;
         font-weight: bold;
         color: #ffffff;
         text-decoration: none;
@@ -108,8 +95,10 @@
 
 <div class="login" id="div_create_game">
     <label for="name"></label><input type="text" placeholder="Name" id="name" name="name">
-    <label for="timeout"></label><input type="text" placeholder="Timeout of each move - 10 to 100" id="timeout" name="timeout">
-    <label for="cellphone"></label><input type="text" pattern="\\+98\\d{10}" placeholder="Mobile" id="cellphone" name="cellphone" disabled="disabled">
+    <label for="timeout"></label><input type="text" placeholder="Timeout - Between 10 to 30" id="timeout"
+                                        name="timeout">
+    <label for="cellphone"></label><input type="text" pattern="\\+98\\d{10}" placeholder="Mobile" id="cellphone"
+                                          name="cellphone" disabled="disabled">
     <input type="submit" value="Create New Game" id="create_game" name="create_game">
     <input type="submit" value="Join Game" id="join_game" name="join_game">
 </div>

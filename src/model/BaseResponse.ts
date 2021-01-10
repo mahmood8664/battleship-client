@@ -1,9 +1,9 @@
-export class BaseResponse {
-    ok: boolean = true;
-    error?: Error
+export interface BaseResponse {
+    ok: boolean;
+    error: Error
 }
 
-export class Error {
-    error_code?: number;
-    error_message?: string;
+export interface Error {
+    error_code: number;
+    error_message: string;
 }

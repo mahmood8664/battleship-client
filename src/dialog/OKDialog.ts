@@ -15,14 +15,16 @@ export class OKDialog {
     }
 
     private show() {
-        let rectangle = this.scene.add.rectangle(-100, -100, 1500, 1500,
+        let rectangle = this.scene.add.rectangle(-100, -100, 2000, 4000,
             0xffffff, 0.5).setOrigin(0, 0);
         rectangle.setInteractive();
 
         // @ts-ignore
         let dialog = this.scene.rexUI.add.dialog({
-            x: 400,
-            y: 300,
+            x: 360,
+            y: 500,
+            width: 1000,
+            height: 1000,
             // @ts-ignore
             background: this.scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0x1565c0),
             // @ts-ignore
@@ -30,7 +32,7 @@ export class OKDialog {
                 // @ts-ignore
                 background: this.scene.rexUI.add.roundRectangle(0, 0, 100, 40, 20, 0x003c8f),
                 text: this.scene.add.text(0, 0, this.title, {
-                    fontSize: '24px'
+                    fontSize: '40px'
                 }),
                 space: {
                     left: 15,
@@ -41,7 +43,7 @@ export class OKDialog {
             }),
 
             content: this.scene.add.text(0, 0, this.text, {
-                fontSize: '20px'
+                fontSize: '50px'
             }),
 
             actions: [
@@ -66,6 +68,7 @@ export class OKDialog {
             expand: {
                 content: false, // Content is a pure text object
             }
+
         })
             .layout()
             // .drawBounds(this._scene.add.graphics(), 0xff0000)
