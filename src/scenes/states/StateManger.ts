@@ -7,8 +7,16 @@ import {InitState} from "./InitState";
 import {WaitingState} from "./WaitingState";
 import {PlayState} from "./PlayState";
 import {Socket} from "../../api/socket";
-import {EndGameEvent, EventType, ExplosionEvent, GameStartEvent, RevealEvent, ShipMovedEvent} from "../../model/SocketEvent";
+import {
+    EndGameEvent,
+    EventType,
+    ExplosionEvent,
+    GameStartEvent,
+    RevealEvent,
+    ShipMovedEvent
+} from "../../model/SocketEvent";
 import {FinishState} from "./FinishState";
+import {WaitingNoTimeoutState} from "./WaitingNoTimeoutState";
 import Sprite = Phaser.GameObjects.Sprite;
 
 
@@ -20,6 +28,7 @@ export enum GameState {
     WAITING,
     PLAY,
     FINISHED,
+    WAITING_NO_TIMEOUT,
 }
 
 
@@ -32,6 +41,7 @@ export class StateManger {
     private _waitingStateHandler = new WaitingState();
     private _playStateHandler = new PlayState();
     private _finishStateHandler = new FinishState();
+    private _waitingNoTimeoutStateHandler = new WaitingNoTimeoutState();
     private _currentStateHandler: BaseState;
     private _state: GameState = GameState.INIT_ARRANGE;
 
@@ -75,6 +85,10 @@ export class StateManger {
                 case GameState.FINISHED:
                     this._finishStateHandler.changeState(this.scene);
                     this._currentStateHandler = this._finishStateHandler;
+                    break;
+                case GameState.WAITING_NO_TIMEOUT:
+                    this._waitingNoTimeoutStateHandler.changeState(this.scene);
+                    this._currentStateHandler = this._waitingNoTimeoutStateHandler;
                     break;
             }
         }
@@ -124,26 +138,22 @@ export class StateManger {
                     break;
                 case EventType.SHIP_MOVED:
                     let shipMovedEvent = event.object as ShipMovedEvent;
-                    this.scene.revealed_ships.get(shipMovedEvent.old_ship_index)?.destroy();
-                    this.scene.revealed_ships.delete(shipMovedEvent.old_ship_index);
+                    this._currentStateHandler.hideShip(this.scene, shipMovedEvent.old_ship_index);
                     this.changeState(GameState.PLAY);
                     break;
                 case EventType.OTHER_SIDE_CONNECT:
                     break;
                 case EventType.INTERNAL_SOCKET_CONNECT:
-                    this.scene.connect.visible = true;
-                    this.scene.disconnect.visible = false;
+                    this._currentStateHandler.socketConnectIcon(this.scene, true);
                     break;
                 case EventType.INTERNAL_SOCKET_DISCONNECT:
-                    this.scene.connect.visible = false;
-                    this.scene.disconnect.visible = true;
+                    this._currentStateHandler.socketConnectIcon(this.scene, false);
+                    break;
+                case EventType.INTERNAL_SOCKET_RECONNECT:
+                    this._currentStateHandler.reconnect(this.scene);
                     break;
                 case EventType.GAME_START:
                     let gameStartEvent = event.object as GameStartEvent;
-                    if (!gameStartEvent.game) {
-                        console.error("cannot get game from gameStartEvent");
-                        this.scene.toast.show("error in server");
-                    }
                     if (gameStartEvent.game.your_turn) {
                         this.changeState(GameState.PLAY);
                     } else {
@@ -152,40 +162,22 @@ export class StateManger {
                     break;
                 case EventType.REVEAL:
                     let revealEvent = event.object as RevealEvent;
-                    revealEvent.slots.forEach(value => {
-                        (this.scene.ownField.getChildren()[value] as Sprite).setAlpha(0.001);
-                        (this.scene.ownField.getChildren()[value] as Sprite).setActive(false);
-                    });
+                    this._currentStateHandler.reveal(this.scene, revealEvent.slots);
                     this.changeState(GameState.PLAY);
                     break;
                 case EventType.EXPLOSION:
                     let explosionEvent = event.object as ExplosionEvent;
-                    this.scene.ships.get(explosionEvent.index)?.setVisible(false);
-                    this.scene.ships.get(explosionEvent.index)?.setActive(false);
-                    (this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.setAlpha(0.001);
-                    (this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.setActive(false);
-                    if (this.scene.ships.get(explosionEvent.index) !== undefined) {
-                        this.scene.playExplosion((this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.x,
-                            (this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.y);
-                        //after play animation
-                        window.setTimeout(() => {
-                            this.scene.add.image((this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.x,
-                                (this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.y, "exploded").setScale(0.2);
-                        }, 1500);
+                    let explosion = this._currentStateHandler.explosion(this.scene, explosionEvent.index);
+                    if (explosion) {
+                        this.changeState(GameState.WAITING);
                     } else {
-                        this.scene.playExplosionEmpty((this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.x,
-                            (this.scene.ownField.getChildren()[explosionEvent.index] as Sprite)?.y);
+                        this.changeState(GameState.PLAY);
                     }
-                    this.changeState(GameState.PLAY);
                     break;
                 case EventType.END_GAME:
                     let endGameEvent = event.object as EndGameEvent;
                     this.changeState(GameState.FINISHED);
-                    if (endGameEvent.winner_user_id === localStorage.getItem("user_id")) {
-                        this.scene.textBox.text = "You Win!";
-                    } else {
-                        this.scene.textBox.text = "You lose!";
-                    }
+                    this._currentStateHandler.finish(this.scene, endGameEvent.winner_user_id);
                     break;
             }
         });

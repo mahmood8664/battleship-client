@@ -6,5 +6,5 @@ export interface CreateUserRequest {
 }
 
 export interface CreateUserResponse extends BaseResponse {
-    id: string
+    id?: string
 }

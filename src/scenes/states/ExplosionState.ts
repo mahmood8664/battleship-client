@@ -38,20 +38,19 @@ export class ExplosionState extends BaseState {
                 if (response.ok) {
                     target.setAlpha(0.001);
                     target.setActive(false);
-
                     if (response.has_ship) {
                         scene.playExplosion(target.x, target.y);
                         scene.revealed_ships.get(indexOf)?.destroy();
                         scene.revealed_ships.delete(indexOf);
                         //after play animation
                         window.setTimeout(() => {
-                            scene.add.image(target.x, target.y, "exploded").setScale(0.2);
+                            scene.enemy_exploded.set(indexOf, scene.add.image(target.x, target.y, "exploded").setScale(0.2));
                         }, 1500);
-
+                        scene.stateManger.changeState(GameState.PLAY);
                     } else {
                         scene.playExplosionEmpty(target.x, target.y);
+                        scene.stateManger.changeState(GameState.WAITING);
                     }
-                    scene.stateManger.changeState(GameState.WAITING);
                 } else {
                     scene.stateManger.changeState(GameState.PLAY);
                     this.handleServerError(scene, response);

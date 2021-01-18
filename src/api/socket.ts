@@ -11,6 +11,7 @@ import {
     ShipMovedEvent,
     SocketConnectEvent
 } from "../model/SocketEvent";
+import {Util} from "../util/Util";
 
 export class Socket {
 
@@ -26,11 +27,19 @@ export class Socket {
         if (!Socket._webSocket || Socket._webSocket.readyState != WebSocket.OPEN) {
             Socket._webSocket = new WebSocket(Config.socketUrl + "?game_id=" + gameId + "&user_id=" + userId);
             Socket._webSocket.onopen = () => {
+                if (localStorage.getItem("close") === "1") {
+                    let raw: RawEvent = {
+                        event_type: EventType.INTERNAL_SOCKET_RECONNECT,
+                        payload: "",
+                    };
+                    Socket.publish(JSON.stringify(raw));
+                }
                 let raw: RawEvent = {
                     event_type: EventType.INTERNAL_SOCKET_CONNECT,
                     payload: "",
                 };
-                Socket.publish(JSON.stringify(raw))
+                Socket.publish(JSON.stringify(raw));
+                localStorage.removeItem("close");
             };
 
             Socket._webSocket.onmessage = ev => {
@@ -42,7 +51,8 @@ export class Socket {
                     event_type: EventType.INTERNAL_SOCKET_DISCONNECT,
                     payload: "",
                 };
-                Socket.publish(JSON.stringify(raw))
+                Socket.publish(JSON.stringify(raw));
+                localStorage.setItem("close", "1");
                 window.setTimeout(() => this.connect(gameId, userId), 1000);
             };
 
@@ -66,6 +76,16 @@ export class Socket {
         }
     }
 
+    public static unsubscribe(eventType: EventType, func: { (event: Event): void }) {
+        if (this.subscribersMap.get(eventType) !== undefined) {
+            let number = this.subscribersMap.get(eventType)!.indexOf(func);
+            if (number >= 0) {
+                delete this.subscribersMap.get(eventType)![number];
+            }
+        }
+    }
+
+
     private static publish(message: string) {
         let rawEvent: RawEvent = JSON.parse(message);
         let event: Event;
@@ -76,6 +96,7 @@ export class Socket {
                 break;
             case EventType.GAME_START:
                 let gameStart: GameStartEvent = JSON.parse(rawEvent.payload);
+                gameStart.game.state = Util.fillMaps(gameStart.game.state);
                 event = {eventType: rawEvent.event_type, object: gameStart};
                 break;
             case EventType.CHANGE_TURN:
@@ -99,6 +120,9 @@ export class Socket {
                 event = {eventType: rawEvent.event_type, object: endGameEvent};
                 break;
             case EventType.INTERNAL_SOCKET_CONNECT:
+                event = {eventType: rawEvent.event_type, object: undefined};
+                break;
+            case EventType.INTERNAL_SOCKET_RECONNECT:
                 event = {eventType: rawEvent.event_type, object: undefined};
                 break;
             case EventType.INTERNAL_SOCKET_DISCONNECT:

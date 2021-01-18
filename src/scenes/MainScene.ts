@@ -15,6 +15,7 @@ import {Scene} from "phaser";
 import {GameState, StateManger} from "./states/StateManger";
 import {Socket} from "../api/socket";
 import {Timer} from "../util/Timer";
+import {Util} from "../util/Util";
 import Sprite = Phaser.GameObjects.Sprite;
 import Group = Phaser.GameObjects.Group;
 import Image = Phaser.GameObjects.Image;
@@ -22,7 +23,6 @@ import Rectangle = Phaser.GameObjects.Rectangle;
 import SettingsConfig = Phaser.Types.Scenes.SettingsConfig;
 import Text = Phaser.GameObjects.Text;
 import BaseSound = Phaser.Sound.BaseSound;
-import {Util} from "../util/Util";
 
 const sceneConfig: SettingsConfig = {
     active: false,
@@ -46,6 +46,8 @@ export class MainScene extends Scene {
     private _loadingRectangle!: Rectangle;
     private _ships: Map<number, Image> = new Map<number, Image>();
     private _revealed_ships: Map<number, Image> = new Map<number, Image>();
+    private _enemy_exploded: Map<number, Image> = new Map<number, Image>();
+    private _own_exploded: Map<number, Image> = new Map<number, Image>();
     private readonly _stateManger: StateManger;
     private _textBox!: Text;
     private _connect!: Image;
@@ -177,6 +179,22 @@ export class MainScene extends Scene {
         this._revealed_ships = value;
     }
 
+    get enemy_exploded(): Map<number, Phaser.GameObjects.Image> {
+        return this._enemy_exploded;
+    }
+
+    set enemy_exploded(value: Map<number, Phaser.GameObjects.Image>) {
+        this._enemy_exploded = value;
+    }
+
+    get own_exploded(): Map<number, Phaser.GameObjects.Image> {
+        return this._own_exploded;
+    }
+
+    set own_exploded(value: Map<number, Phaser.GameObjects.Image>) {
+        this._own_exploded = value;
+    }
+
 //endregion
 
     public preload() {
@@ -193,11 +211,11 @@ export class MainScene extends Scene {
         this.load.image('exploded', './assets/exploded.png');
         this.load.audio("explosion", "./assets/explosion.mp3")
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 130, frameHeight: 130});
-        this._toast = this.createToast();
     }
 
     public create() {
         this._desktop = this.sys.game.device.os.desktop;
+
         this.pinch();
         this.createEnemyField();
         this.createOwnField();
@@ -209,13 +227,14 @@ export class MainScene extends Scene {
         this.createConnectionStatus();
         this.createLoading();
         //
-        Util.PromptRefreshBrowser();
+        Util.promptRefreshBrowser();
         //
         Socket.connect(localStorage.getItem("game_id")!, localStorage.getItem("user_id")!);
         this._stateManger.SocketEventSubscribe();
         this._timer = new Timer(this);
         this._explosionSound = this.sound.add("explosion");
         this._stateManger.changeState(GameState.INIT_ARRANGE);
+        this._toast = this.createToast();
     }
 
     public update() {
@@ -481,6 +500,6 @@ export class MainScene extends Scene {
                 hold: 1500,
                 out: 200,
             },
-        })
+        });
     }
 }

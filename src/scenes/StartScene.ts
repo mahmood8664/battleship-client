@@ -184,9 +184,9 @@ export class StartScene extends Scene {
                 localStorage.setItem("game", JSON.stringify(response.game));
                 localStorage.setItem("timeout", String(response.game?.move_timeout_sec));
 
-                if (response.game.status == GameStatus.Init && !response.game.other_side_joined) {
+                if (response.game?.status == GameStatus.Init && !response.game?.other_side_joined) {
                     this.goToWaitingScene();
-                } else if (response.game.status == GameStatus.Joined && response.game.other_side_joined) {
+                } else if (response.game?.status == GameStatus.Joined && response.game?.other_side_joined) {
                     this.goToMainScene();
                 } else {
                     this.toast.show("You cannot play this game!");

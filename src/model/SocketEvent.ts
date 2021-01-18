@@ -16,6 +16,7 @@ export enum EventType {
     END_GAME = "end_game",
     ///Internal Events
     INTERNAL_SOCKET_CONNECT = "internal_socket_connect",
+    INTERNAL_SOCKET_RECONNECT = "internal_socket_reconnect",
     INTERNAL_SOCKET_DISCONNECT = "internal_socket_disconnect"
 }
 

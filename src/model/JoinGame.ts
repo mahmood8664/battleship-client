@@ -7,5 +7,5 @@ export interface JoinGameRequest {
 }
 
 export interface JoinGameResponse extends BaseResponse {
-    game: Game
+    game?: Game
 }

@@ -1,4 +1,5 @@
 import {Scene} from "phaser";
+import {GameState} from "../model/Game";
 
 export class Util {
 
@@ -43,8 +44,7 @@ export class Util {
     }
 
 
-
-    private static listener = function (e:BeforeUnloadEvent) {
+    private static listener = function (e: BeforeUnloadEvent) {
         // Cancel the event
         e.preventDefault(); // If you prevent default behavior in Mozilla Firefox prompt will always be shown
         // Chrome requires returnValue to be set
@@ -53,12 +53,56 @@ export class Util {
         return "ok";
     };
 
-    public static PromptRefreshBrowser() {
+    public static promptRefreshBrowser() {
         window.addEventListener('beforeunload', this.listener);
     }
 
-    public static CancelPromptRefreshBrowser() {
+    public static cancelPromptRefreshBrowser() {
         window.removeEventListener('beforeunload', this.listener);
+    }
+
+    public static finishAfter(millis: number) {
+        this.cancelPromptRefreshBrowser();
+        window.setTimeout(() => {
+            window.location.href = window.location.origin;
+        }, millis);
+    }
+
+
+    public static fillMaps(gameState: GameState): GameState {
+        try {
+            let enemy = new Map<number, boolean>();
+            for (let value in gameState.enemy_ground as Object) {
+                // @ts-ignore
+                enemy.set(Number(value), (gameState.enemy_ground as Object) [value])
+            }
+
+            let enemyShip = new Map<number, boolean>();
+            for (let value in gameState.enemy_revealed_ships as Object) {
+                // @ts-ignore
+                enemyShip.set(Number(value), (gameState.enemy_revealed_ships as Object) [value])
+            }
+
+            let own = new Map<number, boolean>();
+            for (let value in gameState.own_ground as Object) {
+                // @ts-ignore
+                own.set(Number(value), (gameState.own_ground as Object) [value])
+            }
+
+            let ownShip = new Map<number, boolean>();
+            for (let value in gameState.own_ships as Object) {
+                // @ts-ignore
+                ownShip.set(Number(value), (gameState.own_ships as Object) [value])
+            }
+
+            gameState.enemy_ground = enemy;
+            gameState.enemy_revealed_ships = enemyShip;
+            gameState.own_ground = own;
+            gameState.own_ships = ownShip;
+        } catch (e) {
+            console.log(e);
+        }
+        return gameState;
     }
 
 }

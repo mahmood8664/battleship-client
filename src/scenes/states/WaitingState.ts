@@ -14,7 +14,7 @@ export class WaitingState extends BaseState {
 
         this.showLoading(scene);
         scene.textBox.text = "Wait for other side move...";
-        scene.timer.finishTimer();
+        scene.timer.stopTimer();
         scene.timer.startTimer(Number(+localStorage.getItem("timeout")! + 5), () => {
             GameService.changeTurn({
                 user_id: localStorage.getItem("user_id")!,
@@ -24,7 +24,7 @@ export class WaitingState extends BaseState {
                     scene.stateManger.changeState(GameState.PLAY);
                 } else {
                     scene.toast.show("Error: " + response.error?.error_message);
-                    scene.stateManger.changeState(GameState.WAITING);
+                    this.changeState(scene);
                 }
             });
         });

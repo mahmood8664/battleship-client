@@ -1,18 +1,16 @@
 import {MainScene} from "../MainScene";
 import {BaseState} from "./BaseState";
 import {GameState} from "./StateManger";
-import {Util} from "../../util/Util";
+import {GameService} from "../../api/service/GameService";
 
-
-export class FinishState extends BaseState {
+export class WaitingNoTimeoutState extends BaseState {
     changeState(scene: MainScene): void {
         super.changeState(scene);
-        scene.gameState = GameState.FINISHED;
-        Util.cancelPromptRefreshBrowser();
-        this.disableOwnFieldInteractive(scene);
+        scene.gameState = GameState.WAITING_NO_TIMEOUT;
         this.disableGameButtonsInteractive(scene);
         this.disableEnemyFieldInteractive(scene);
-        scene.timer.stopTimer();
+        this.disableOwnFieldInteractive(scene);
+        this.showLoading(scene);
     }
 }
 

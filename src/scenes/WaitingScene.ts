@@ -65,7 +65,8 @@ export class WaitingScene extends Scene {
 
 
         Socket.connect(localStorage.getItem("game_id")!, localStorage.getItem("user_id")!);
-        Socket.subscribe(EventType.OTHER_SIDE_CONNECT, event => {
+
+        let otherSideConnect = () => {
             domElementLink.visible = false;
             domElementWaiting.visible = false;
             domElementDesc.visible = false;
@@ -73,8 +74,15 @@ export class WaitingScene extends Scene {
             this.loadingImage2.visible = false;
             this.loadingImage.visible = false;
             this.button.visible = false;
+            unsubscribe();
             this.scene.add(Math.random().toString(), new MainScene(), true);
-        });
+        };
+
+        let unsubscribe = () => {
+            Socket.unsubscribe(EventType.OTHER_SIDE_CONNECT, otherSideConnect);
+        }
+
+        Socket.subscribe(EventType.OTHER_SIDE_CONNECT, otherSideConnect);
     }
 
 
@@ -148,6 +156,6 @@ export class WaitingScene extends Scene {
                 hold: 1500,
                 out: 200,
             },
-        })
+        });
     }
 }

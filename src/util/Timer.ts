@@ -7,7 +7,8 @@ export class Timer {
     private readonly _scene: MainScene;
     private _timer!: number;
     private _progressBar: Rectangle;
-    private _interval!: number
+    private _interval!: number;
+    private _active: boolean = false;
 
     constructor(scene: MainScene) {
         this._scene = scene;
@@ -22,8 +23,13 @@ export class Timer {
         return this._timer;
     }
 
+    get active(): boolean {
+        return this._active;
+    }
+
     public startTimer(value: number, callback: Function, param?: any) {
-        this.finishTimer();
+        this.stopTimer();
+        this._active = true;
         this._timer = value;
         let passed = 1;
         this._progressBar.setSize(545, 10);
@@ -38,10 +44,11 @@ export class Timer {
         }, 1000);
     }
 
-    public finishTimer() {
+    public stopTimer() {
         if (this._interval) {
             clearInterval(this._interval);
         }
+        this._active = false;
         this._progressBar.setSize(0, 0);
     }
 

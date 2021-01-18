@@ -7,6 +7,8 @@ import {ChangeTurnRequest, ChangeTurnResponse} from "../../model/ChangeTurn";
 import {MoveShipRequest, MoveShipResponse} from "../../model/MoveShip";
 import {RevealEnemyFieldsRequest, RevealEnemyFieldsResponse} from "../../model/RevealEnemyFields";
 import {ExplodeRequest, ExplodeResponse} from "../../model/Explode";
+import {GameState} from "../../model/Game";
+import {Util} from "../../util/Util";
 
 export enum ServerErrorCodes {
     SHIP_INVALID_MOVE,
@@ -27,6 +29,11 @@ export class GameService {
             },
         }).then(response => {
             return response.json();
+        }).then(res => {
+            if (res.ok && res.game) {
+                res.game.state = Util.fillMaps(res.game.state);
+            }
+            return Promise.resolve(res);
         }).catch(reason => ({
             ok: false,
             error: {
@@ -47,6 +54,11 @@ export class GameService {
             },
         }).then(response => {
             return response.json();
+        }).then(res => {
+            if (res.ok && res.game) {
+                res.game.state = Util.fillMaps(res.game.state);
+            }
+            return Promise.resolve(res);
         }).catch(reason => ({
             ok: false,
             error: {
@@ -68,6 +80,11 @@ export class GameService {
             },
         }).then(response => {
             return response.json();
+        }).then(res => {
+            if (res.ok && res.game) {
+                res.game.state = Util.fillMaps(res.game.state);
+            }
+            return Promise.resolve(res);
         }).catch(reason => ({
             ok: false,
             error: {

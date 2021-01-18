@@ -7,5 +7,5 @@ export interface CreateGameRequest {
 }
 
 export interface CreateGameResponse extends BaseResponse {
-    game: Game
+    game?: Game
 }

@@ -9,5 +9,5 @@ export interface SubmitShipsLocationsRequest {
 }
 
 export interface SubmitShipsLocationsResponse extends BaseResponse {
-    game_status: GameStatus
+    game_status?: GameStatus
 }

@@ -7,5 +7,5 @@ export interface RevealEnemyFieldsRequest {
 }
 
 export interface RevealEnemyFieldsResponse extends BaseResponse {
-    revealed_ship_indexes: number[];
+    revealed_ship_indexes?: number[];
 }

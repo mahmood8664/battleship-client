@@ -4,6 +4,7 @@ import {GameState} from "./StateManger";
 import {YesNoDialog} from "../../dialog/YesNoDialog";
 import {GameService} from "../../api/service/GameService";
 import {Game, GameStatus} from "../../model/Game";
+import {Util} from "../../util/Util";
 import Sprite = Phaser.GameObjects.Sprite;
 import Image = Phaser.GameObjects.Image;
 
@@ -15,21 +16,24 @@ export class InitState extends BaseState {
         super.disableGameButtonsInteractive(scene);
         super.enableOwnFieldInteractive(scene);
         super.disableEnemyFieldInteractive(scene);
-        scene.textBox.text = "Put your ships on red squares"
-
-        scene.timer.startTimer(30, () => {
-            let randomShipIndexed: number[] = [];
-            while (randomShipIndexed.length != 10) {
-                let random = Math.floor(Math.random() * Math.floor(100));
-                if (!scene.ships.get(random)) {
-                    randomShipIndexed.push(random);
-                    let square = scene.ownField.getChildren()[random] as Image;
-                    scene.ships.set(random, scene.add.image(square.x, square.y, "ship").setScale(0.5));
+        if (!scene.timer.active) {
+            scene.textBox.text = "Put your ships on red squares"
+            scene.timer.startTimer(30, () => {
+                let randomShipIndexed: number[] = [];
+                scene.ships.forEach(img => img.destroy());
+                scene.ships.clear();
+                while (randomShipIndexed.length != 10) {
+                    let random = Math.floor(Math.random() * 100);
+                    if (!scene.ships.get(random)) {
+                        randomShipIndexed.push(random);
+                        let square = scene.ownField.getChildren()[random] as Image;
+                        scene.ships.set(random, scene.add.image(square.x, square.y, "ship").setScale(0.5));
+                    }
                 }
-            }
-            this.showLoading(scene);
-            this.submitShipLocations(randomShipIndexed, scene);
-        });
+                this.showLoading(scene);
+                this.submitShipLocations(randomShipIndexed, scene, true);
+            });
+        }
     }
 
     ownFieldPointerHover(scene: MainScene, target: Sprite, targetIndexOf: number) {
@@ -43,7 +47,6 @@ export class InitState extends BaseState {
     }
 
     ownFieldPointerUp(scene: MainScene, target: Sprite, targetIndexOf: number) {
-
         if (scene.ships.get(targetIndexOf) == undefined && scene.ships.size < scene.numberOfShips) {
             scene.ships.set(targetIndexOf, scene.add.image(target.x, target.y, "ship").setScale(0.5));
         } else {
@@ -52,21 +55,18 @@ export class InitState extends BaseState {
         }
         if (scene.ships.size == scene.numberOfShips) {
             new YesNoDialog(scene, "", "Are you sure?                  ", () => {
-
                 let shipIndexes: number[] = []
                 for (let key of scene.ships.keys()) {
                     shipIndexes.push(key)
                 }
-                scene.stateManger.changeState(GameState.WAITING);
-                this.submitShipLocations(shipIndexes, scene);
-
+                scene.stateManger.changeState(GameState.WAITING_NO_TIMEOUT);
+                this.submitShipLocations(shipIndexes, scene, false);
             }, () => {
-
-            })
+            });
         }
     }
 
-    private submitShipLocations(shipIndexes: number[], scene: MainScene) {
+    private submitShipLocations(shipIndexes: number[], scene: MainScene, autoSelect: boolean) {
         GameService.submitShipsLocations({
             game_id: localStorage.getItem("game_id")!,
             user_id: localStorage.getItem("user_id")!,
@@ -75,11 +75,16 @@ export class InitState extends BaseState {
             if (response.ok) {
                 switch (response.game_status) {
                     case GameStatus.Joined:
-                        scene.textBox.text = "Waiting for other side to select ships locations..."
+                        scene.textBox.text = "Waiting for other side to select ships locations...";
+                        scene.timer.startTimer(30, () => {
+                            scene.textBox.text = "No action from the other side, restarting game...";
+                            Util.finishAfter(4000);
+                        });
                         break;
                     case GameStatus.Init:
-                        scene.textBox.text = "Error, please contact support"
+                        scene.textBox.text = "Error, game state is not valid"
                         scene.stateManger.changeState(GameState.FINISHED);
+                        Util.finishAfter(4000);
                         break;
                     case GameStatus.Start:
                         let game: Game = JSON.parse(localStorage.getItem("game")!);
@@ -92,10 +97,16 @@ export class InitState extends BaseState {
                     case GameStatus.Finished:
                         scene.toast.show("Game is already finished");
                         scene.stateManger.changeState(GameState.FINISHED);
+                        Util.finishAfter(4000);
                         break;
                 }
             } else {
                 this.handleServerError(scene, response);
+                scene.stateManger.changeState(GameState.INIT_ARRANGE);
+                if (autoSelect) {
+                    scene.textBox.text = "Unknown error, restarting game...";
+                    Util.finishAfter(4000);
+                }
             }
         })
     }
