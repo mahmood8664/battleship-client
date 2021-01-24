@@ -4,10 +4,12 @@ COPY . /app
 WORKDIR /app
 RUN npm install && \
     npm run build-production
-RUN ls
-#FROM alpine:3.12
-#RUN mkdir /app
-#WORKDIR /app
-#COPY --from=build /out /app
-#EXPOSE 9090
-#CMD ["./battleship", "start"]
+FROM nginx:1.19
+COPY .docker/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build ./app/dist/ /usr/share/nginx/html
+USER root
+RUN chgrp -R 0 /usr/share/nginx && chmod -R g=u /usr/share/nginx
+USER nginx
+COPY .docker/EntryPoint.sh /EntryPoint.sh
+ENTRYPOINT ["/EntryPoint.sh"]
+
