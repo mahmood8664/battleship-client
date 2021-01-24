@@ -7,10 +7,10 @@ RUN npm install && \
 FROM nginx:1.19
 COPY .docker/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build ./app/dist/ /usr/share/nginx/html
-USER root
+#USER root
 RUN chgrp -R 0 /usr/share/nginx && chmod -R g=u /usr/share/nginx
 COPY .docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-USER nginx
+#USER nginx
 ENTRYPOINT ["/entrypoint.sh"]
 
