@@ -10,6 +10,6 @@ COPY --from=build ./app/dist/ /usr/share/nginx/html
 USER root
 RUN chgrp -R 0 /usr/share/nginx && chmod -R g=u /usr/share/nginx
 USER nginx
-COPY .docker/EntryPoint.sh /EntryPoint.sh
-ENTRYPOINT ["/EntryPoint.sh"]
+COPY .docker/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
