@@ -7,7 +7,6 @@ import {ChangeTurnRequest, ChangeTurnResponse} from "../../model/ChangeTurn";
 import {MoveShipRequest, MoveShipResponse} from "../../model/MoveShip";
 import {RevealEnemyFieldsRequest, RevealEnemyFieldsResponse} from "../../model/RevealEnemyFields";
 import {ExplodeRequest, ExplodeResponse} from "../../model/Explode";
-import {GameState} from "../../model/Game";
 import {Util} from "../../util/Util";
 
 export enum ServerErrorCodes {
@@ -25,7 +24,8 @@ export class GameService {
             mode: "cors",
             body: JSON.stringify(request),
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -50,7 +50,8 @@ export class GameService {
             mode: "cors",
             body: JSON.stringify(request),
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -76,7 +77,8 @@ export class GameService {
             method: "get",
             mode: "cors",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -101,7 +103,8 @@ export class GameService {
             mode: "cors",
             body: JSON.stringify(request),
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -120,7 +123,8 @@ export class GameService {
             mode: "cors",
             body: JSON.stringify(request),
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then<ChangeTurnResponse>(response => {
             return response.json();
@@ -139,7 +143,8 @@ export class GameService {
             mode: "cors",
             body: JSON.stringify(request),
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -158,7 +163,8 @@ export class GameService {
             mode: "cors",
             body: JSON.stringify(request),
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -178,7 +184,8 @@ export class GameService {
             mode: "cors",
             body: JSON.stringify(request),
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
