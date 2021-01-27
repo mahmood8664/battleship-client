@@ -62,13 +62,6 @@ export class StartScene extends Scene {
             }
         });
 
-
-        window.setInterval(() => {
-            GameService.getGame2("dd11bad67b71f82e034ff706", "801fb7d0727f18beeaa91726").then(response => {
-                console.log(response);
-            });
-        }, 5000);
-
         this.tweens.add({
             targets: this.loginHtmlElement,
             y: 400,
