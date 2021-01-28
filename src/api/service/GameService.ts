@@ -73,7 +73,7 @@ export class GameService {
     public static getGame(): Promise<GetGameResponse> {
         let gameId = localStorage.getItem("game_id");
         let userId = localStorage.getItem("user_id");
-        return fetch(Config.restUrl + "/game/" + gameId + "?user_id=" + userId, {
+        return fetch(Config.restUrl + "/game/" + gameId + "?user_id=" + userId + "&request_id=" + Math.floor(Math.random() * 999999999999), {
             method: "get",
             mode: "cors",
             headers: {
