@@ -30,6 +30,7 @@ export class ExplosionState extends BaseState {
 
     enemyFieldPointerUp(scene: MainScene, target: Sprite, targetNeighbors: Sprite[], indexOf: number): void {
         if (target.active || scene.revealed_ships.get(indexOf) != undefined) {
+            scene.stateManger.changeState(GameState.WAITING);
             GameService.explode({
                 game_id: localStorage.getItem("game_id")!,
                 user_id: localStorage.getItem(("user_id"))!,
