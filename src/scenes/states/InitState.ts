@@ -77,8 +77,23 @@ export class InitState extends BaseState {
                     case GameStatus.Joined:
                         scene.textBox.text = "Waiting for other side to select ships locations...";
                         scene.timer.startTimer(30, () => {
-                            scene.textBox.text = "No action from the other side, restarting game...";
-                            Util.finishAfter(4000);
+                            GameService.getGame().then(getGameResponse => {
+                                if (getGameResponse.ok) {
+                                    if (getGameResponse.game?.status == GameStatus.Start) {
+                                        if (getGameResponse.game.your_turn) {
+                                            scene.stateManger.changeState(GameState.PLAY);
+                                        } else {
+                                            scene.stateManger.changeState(GameState.WAITING);
+                                        }
+                                    } else {
+                                        scene.textBox.text = "No action from the other side, restarting game...";
+                                        Util.finishAfter(4000);
+                                    }
+                                } else {
+                                    scene.textBox.text = "No action from the other side, restarting game...";
+                                    Util.finishAfter(4000);
+                                }
+                            });
                         });
                         break;
                     case GameStatus.Init:
@@ -104,8 +119,8 @@ export class InitState extends BaseState {
                 this.handleServerError(scene, response);
                 scene.stateManger.changeState(GameState.INIT_ARRANGE);
                 if (autoSelect) {
-                    scene.textBox.text = "Unknown error, restarting game...";
-                    Util.finishAfter(4000);
+                    scene.textBox.text = "Unknown error, try again...";
+                    scene.toast.show("Unknown error, try again...");
                 }
             }
         })
