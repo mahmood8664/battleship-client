@@ -25,7 +25,6 @@ export class GameService {
             body: JSON.stringify(request),
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -51,7 +50,6 @@ export class GameService {
             body: JSON.stringify(request),
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -78,7 +76,6 @@ export class GameService {
             mode: "cors",
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -104,7 +101,6 @@ export class GameService {
             body: JSON.stringify(request),
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -124,7 +120,6 @@ export class GameService {
             body: JSON.stringify(request),
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then<ChangeTurnResponse>(response => {
             return response.json();
@@ -144,7 +139,6 @@ export class GameService {
             body: JSON.stringify(request),
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -164,7 +158,6 @@ export class GameService {
             body: JSON.stringify(request),
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
@@ -185,7 +178,6 @@ export class GameService {
             body: JSON.stringify(request),
             headers: {
                 "Content-Type": "application/json",
-                "cache-control": "no-cache"
             },
         }).then(response => {
             return response.json();
