@@ -28,6 +28,7 @@ export class Socket {
         if (!Socket._webSocket || Socket._webSocket.readyState != WebSocket.OPEN) {
             Socket._webSocket = new WebSocket(Config.socketUrl + "?game_id=" + gameId + "&user_id=" + userId);
             Socket._webSocket.onopen = () => {
+                console.log("on open start, close=" + close);
                 if (close) {
                     let event: RawEvent = {
                         event_type: EventType.INTERNAL_SOCKET_RECONNECT,
@@ -41,6 +42,7 @@ export class Socket {
                 };
                 Socket.publish(JSON.stringify(raw));
                 close = false;
+                console.log("on open end");
             };
 
             Socket._webSocket.onmessage = ev => {
@@ -48,6 +50,7 @@ export class Socket {
             };
 
             Socket._webSocket.onclose = () => {
+                console.log("on close start");
                 let event: RawEvent = {
                     event_type: EventType.INTERNAL_SOCKET_DISCONNECT,
                     payload: "",
@@ -55,6 +58,7 @@ export class Socket {
                 close = true;
                 window.setTimeout(() => this.connect(gameId, userId), 1000);
                 Socket.publish(JSON.stringify(event));
+                console.log("on close end");
             };
 
             Socket._webSocket.onerror = err => {
