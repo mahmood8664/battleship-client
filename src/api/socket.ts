@@ -29,11 +29,11 @@ export class Socket {
             Socket._webSocket = new WebSocket(Config.socketUrl + "?game_id=" + gameId + "&user_id=" + userId);
             Socket._webSocket.onopen = () => {
                 if (close) {
-                    let raw: RawEvent = {
+                    let event: RawEvent = {
                         event_type: EventType.INTERNAL_SOCKET_RECONNECT,
                         payload: "",
                     };
-                    Socket.publish(JSON.stringify(raw));
+                    Socket.publish(JSON.stringify(event));
                 }
                 let raw: RawEvent = {
                     event_type: EventType.INTERNAL_SOCKET_CONNECT,
@@ -48,13 +48,13 @@ export class Socket {
             };
 
             Socket._webSocket.onclose = () => {
-                let raw: RawEvent = {
+                let event: RawEvent = {
                     event_type: EventType.INTERNAL_SOCKET_DISCONNECT,
                     payload: "",
                 };
-                Socket.publish(JSON.stringify(raw));
                 close = true;
                 window.setTimeout(() => this.connect(gameId, userId), 1000);
+                Socket.publish(JSON.stringify(event));
             };
 
             Socket._webSocket.onerror = err => {
