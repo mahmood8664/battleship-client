@@ -58,7 +58,7 @@ export class Socket {
                 close = true;
                 window.setTimeout(() => this.connect(gameId, userId), 1000);
                 Socket.publish(JSON.stringify(event));
-                console.log("on close end");
+                console.log("on close end, close:" + close);
             };
 
             Socket._webSocket.onerror = err => {
