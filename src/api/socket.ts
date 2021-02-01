@@ -24,10 +24,11 @@ export class Socket {
     }
 
     public static connect(gameId: string, userId: string): WebSocket {
+        let close = false;
         if (!Socket._webSocket || Socket._webSocket.readyState != WebSocket.OPEN) {
             Socket._webSocket = new WebSocket(Config.socketUrl + "?game_id=" + gameId + "&user_id=" + userId);
             Socket._webSocket.onopen = () => {
-                if (localStorage.getItem("close") === "1") {
+                if (close) {
                     let raw: RawEvent = {
                         event_type: EventType.INTERNAL_SOCKET_RECONNECT,
                         payload: "",
@@ -39,7 +40,7 @@ export class Socket {
                     payload: "",
                 };
                 Socket.publish(JSON.stringify(raw));
-                localStorage.removeItem("close");
+                close = false;
             };
 
             Socket._webSocket.onmessage = ev => {
@@ -52,7 +53,7 @@ export class Socket {
                     payload: "",
                 };
                 Socket.publish(JSON.stringify(raw));
-                localStorage.setItem("close", "1");
+                close = true;
                 window.setTimeout(() => this.connect(gameId, userId), 1000);
             };
 
