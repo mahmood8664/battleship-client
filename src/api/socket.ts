@@ -18,18 +18,17 @@ export class Socket {
     private static _webSocket: WebSocket;
     private static subscribersToAllEvents: ((event: Event) => void) [] = []
     private static subscribersMap: Map<EventType, ((event: Event) => void) []> = new Map<EventType, ((event: Event) => void)[]>();
+    private static close = false;
 
     static get webSocket(): WebSocket {
         return this._webSocket;
     }
 
     public static connect(gameId: string, userId: string): WebSocket {
-        let close = false;
         if (!Socket._webSocket || Socket._webSocket.readyState != WebSocket.OPEN) {
             Socket._webSocket = new WebSocket(Config.socketUrl + "?game_id=" + gameId + "&user_id=" + userId);
             Socket._webSocket.onopen = () => {
-                console.log("on open start, close=" + close);
-                if (close) {
+                if (this.close) {
                     let event: RawEvent = {
                         event_type: EventType.INTERNAL_SOCKET_RECONNECT,
                         payload: "",
@@ -41,8 +40,7 @@ export class Socket {
                     payload: "",
                 };
                 Socket.publish(JSON.stringify(raw));
-                close = false;
-                console.log("on open end");
+                this.close = false;
             };
 
             Socket._webSocket.onmessage = ev => {
@@ -50,15 +48,13 @@ export class Socket {
             };
 
             Socket._webSocket.onclose = () => {
-                console.log("on close start");
                 let event: RawEvent = {
                     event_type: EventType.INTERNAL_SOCKET_DISCONNECT,
                     payload: "",
                 };
-                close = true;
+                this.close = true;
                 window.setTimeout(() => this.connect(gameId, userId), 1000);
                 Socket.publish(JSON.stringify(event));
-                console.log("on close end, close:" + close);
             };
 
             Socket._webSocket.onerror = err => {
