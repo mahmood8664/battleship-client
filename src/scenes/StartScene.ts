@@ -193,8 +193,6 @@ export class StartScene extends Scene {
                     window.location.href = window.location.origin;
                 }
                 //
-                Socket.connect(localStorage.getItem("game_id")!, localStorage.getItem("user_id")!);
-                //
             } else {
                 this.toast.show("Error: " + response.error?.error_message);
                 window.location.href = window.location.origin;
