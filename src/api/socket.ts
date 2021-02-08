@@ -18,7 +18,8 @@ export class Socket {
     private static _webSocket: WebSocket;
     private static subscribersToAllEvents: ((event: Event) => void) [] = []
     private static subscribersMap: Map<EventType, ((event: Event) => void) []> = new Map<EventType, ((event: Event) => void)[]>();
-    private static close = false;
+    private static closed = false;
+    private static manualClose = false;
 
     static get webSocket(): WebSocket {
         return this._webSocket;
@@ -27,8 +28,9 @@ export class Socket {
     public static connect(gameId: string, userId: string): WebSocket {
         if (!Socket._webSocket || Socket._webSocket.readyState != WebSocket.OPEN) {
             Socket._webSocket = new WebSocket(Config.socketUrl + "?game_id=" + gameId + "&user_id=" + userId);
+
             Socket._webSocket.onopen = () => {
-                if (this.close) {
+                if (this.closed) {
                     let event: RawEvent = {
                         event_type: EventType.INTERNAL_SOCKET_RECONNECT,
                         payload: "",
@@ -40,7 +42,7 @@ export class Socket {
                     payload: "",
                 };
                 Socket.publish(JSON.stringify(raw));
-                this.close = false;
+                this.closed = false;
             };
 
             Socket._webSocket.onmessage = ev => {
@@ -48,13 +50,15 @@ export class Socket {
             };
 
             Socket._webSocket.onclose = () => {
-                let event: RawEvent = {
-                    event_type: EventType.INTERNAL_SOCKET_DISCONNECT,
-                    payload: "",
-                };
-                this.close = true;
-                window.setTimeout(() => this.connect(gameId, userId), 1000);
-                Socket.publish(JSON.stringify(event));
+                if (!this.manualClose) {
+                    let event: RawEvent = {
+                        event_type: EventType.INTERNAL_SOCKET_DISCONNECT,
+                        payload: "",
+                    };
+                    this.closed = true;
+                    window.setTimeout(() => this.connect(gameId, userId), 1000);
+                    Socket.publish(JSON.stringify(event));
+                }
             };
 
             Socket._webSocket.onerror = err => {
@@ -63,6 +67,11 @@ export class Socket {
             };
         }
         return Socket._webSocket;
+    }
+
+    public static close() {
+        this.manualClose = true;
+        this._webSocket.close()
     }
 
     public static subscribe(eventType: EventType | null, func: { (event: Event): void }) {

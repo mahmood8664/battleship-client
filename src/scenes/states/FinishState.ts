@@ -2,6 +2,7 @@ import {MainScene} from "../MainScene";
 import {BaseState} from "./BaseState";
 import {GameState} from "./StateManger";
 import {Util} from "../../util/Util";
+import {Socket} from "../../api/socket";
 
 
 export class FinishState extends BaseState {
@@ -13,6 +14,7 @@ export class FinishState extends BaseState {
         this.disableGameButtonsInteractive(scene);
         this.disableEnemyFieldInteractive(scene);
         scene.timer.stopTimer();
+        Socket.close();
     }
 }
 
