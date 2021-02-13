@@ -4,7 +4,7 @@ COPY . /app
 WORKDIR /app
 RUN npm install && \
     npm run build-production
-FROM nginx:1.19
+FROM nginx:stable
 COPY .docker/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build ./app/dist/ /usr/share/nginx/html
 COPY .docker/entrypoint.sh /entrypoint.sh
