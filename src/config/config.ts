@@ -1,5 +1,5 @@
 export class Config {
-    public static readonly baseIp = "api.battleship.mamiri.me";
+    public static readonly baseIp = "mamiri.me/api/battleship";
     // public static readonly baseIp = "192.168.1.118:8080";
     public static readonly restProtocol = "https://";
     public static readonly socketProtocol = "wss://";
