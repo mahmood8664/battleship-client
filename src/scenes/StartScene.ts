@@ -190,12 +190,12 @@ export class StartScene extends Scene {
                     this.goToMainScene();
                 } else {
                     this.toast.show("You cannot play this game!");
-                    window.location.href = window.location.origin;
+                    window.location.href = window.location.origin + "/battleship";
                 }
                 //
             } else {
                 this.toast.show("Error: " + response.error?.error_message);
-                window.location.href = window.location.origin;
+                window.location.href = window.location.origin + "/battleship";
             }
             this.hideLoading();
         })

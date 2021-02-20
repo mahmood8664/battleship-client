@@ -64,7 +64,7 @@ export class Util {
     public static finishAfter(millis: number) {
         this.cancelPromptRefreshBrowser();
         window.setTimeout(() => {
-            window.location.href = window.location.origin;
+            window.location.href = window.location.origin + "/battleship";
         }, millis);
     }
 
