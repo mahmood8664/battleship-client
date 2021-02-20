@@ -24,7 +24,7 @@ module.exports = merge.merge(common, {
             },
         ],
     },
-    devtool: 'source-map',
+    // devtool: 'source-map',
     optimization: {
         runtimeChunk: 'single',
         moduleIds: 'hashed',
