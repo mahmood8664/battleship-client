@@ -9,4 +9,6 @@ docker build -t battleship-client
 
 To run battleship client docker image run:
 
+```bash
 docker run --name battleship-client --network network-name --restart always -d battleship-client
+```
