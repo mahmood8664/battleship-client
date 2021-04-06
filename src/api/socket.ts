@@ -56,7 +56,7 @@ export class Socket {
                         payload: "",
                     };
                     this.closed = true;
-                    window.setTimeout(() => this.connect(gameId, userId), 1000);
+                    window.setTimeout(() => this.connect(gameId, userId), 300);
                     Socket.publish(JSON.stringify(event));
                 }
             };

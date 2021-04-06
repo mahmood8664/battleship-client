@@ -1,7 +1,6 @@
 import {MainScene} from "../MainScene";
 import {BaseState} from "./BaseState";
 import {GameState} from "./StateManger";
-import {GameService} from "../../api/service/GameService";
 
 export class WaitingNoTimeoutState extends BaseState {
     changeState(scene: MainScene): void {
