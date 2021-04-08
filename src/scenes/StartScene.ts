@@ -6,7 +6,6 @@ import {GameService} from "../api/service/GameService";
 import {WaitingScene} from "./WaitingScene";
 import {Util} from "../util/Util";
 import {MainScene} from "./MainScene";
-import {Socket} from "../api/socket";
 import {GameStatus} from "../model/Game";
 import Rectangle = Phaser.GameObjects.Rectangle;
 import Image = Phaser.GameObjects.Image;
@@ -41,24 +40,29 @@ export class StartScene extends Scene {
 
         let userAlreadyCreated = false;
         if (localStorage.getItem("user_name") != undefined && localStorage.getItem("user_id") != undefined) {
-            (this.loginHtmlElement.getChildByName("name") as HTMLInputElement).value = localStorage.getItem("user_name")!
+            // (this.loginHtmlElement.getChildByName("name") as HTMLInputElement).value = localStorage.getItem("user_name")!
             userAlreadyCreated = true;
         }
 
         this.loginHtmlElement.addListener('click');
         this.loginHtmlElement.on('click', (event: any) => {
-            let inputName = this.loginHtmlElement.getChildByName('name') as HTMLInputElement;
-            let timeoutElement = this.loginHtmlElement.getChildByName('timeout') as HTMLInputElement;
+            // let inputName = this.loginHtmlElement.getChildByName('name') as HTMLInputElement;
+            // let timeoutElement = this.loginHtmlElement.getChildByName('timeout') as HTMLInputElement;
 
-            let timeout: number = 15;
-            if (timeoutElement.value && +timeoutElement.value >= 10 && +timeoutElement.value <= 30) {
-                timeout = +timeoutElement.value;
-            }
+            let timeout: number = 60;
+            // if (timeoutElement.value && +timeoutElement.value >= 10 && +timeoutElement.value <= 30) {
+            //     timeout = +timeoutElement.value;
+            // }
 
+            let name = Math.random().toString();
             if (event.target.name === "create_game") {
-                this.handleCreateGameBtn(inputName, userAlreadyCreated, timeout);
+                // if (inputName.value === '') {
+                //     this.toast.show("Enter your name");
+                //     return;
+                // }
+                this.handleCreateGameBtn(name, userAlreadyCreated, timeout);
             } else if (event.target.name === "join_game") {
-                this.handleJoinGameBtn(inputName, userAlreadyCreated, joinGameId);
+                this.handleJoinGameBtn(name, userAlreadyCreated, joinGameId);
             }
         });
 
@@ -87,18 +91,14 @@ export class StartScene extends Scene {
         this.loadingImage = this.add.image((this.game.canvas.width / 2), this.game.canvas.height / 2, "loading").setScale(0.3);
     }
 
-    private handleCreateGameBtn(inputName: HTMLInputElement, userAlreadyCreated: boolean, timeout: number) {
-        if (inputName.value === '') {
-            this.toast.show("Enter your name");
-            return;
-        }
+    private handleCreateGameBtn(name: string, userAlreadyCreated: boolean, timeout: number) {
         this.showLoading();
         if (userAlreadyCreated) {
             this.createGame(localStorage.getItem("user_id")!, timeout);
         } else {
-            UserService.createUser({name: inputName.value}).then(response => {
+            UserService.createUser({name: name}).then(response => {
                 if (response.ok) {
-                    localStorage.setItem("user_name", inputName.value);
+                    localStorage.setItem("user_name", name);
                     localStorage.setItem("user_id", response.id!);
                     this.createGame(response.id!, timeout);
                 } else {
@@ -109,26 +109,22 @@ export class StartScene extends Scene {
         }
     }
 
-    private handleJoinGameBtn(inputName: HTMLInputElement, userAlreadyCreated: boolean, joinGameId: string | undefined) {
-        if (inputName.value !== '') {
-            this.showLoading();
-            if (userAlreadyCreated) {
-                this.joinGame(localStorage.getItem("user_id")!, joinGameId ? joinGameId : localStorage.getItem("game_id")!);
-            } else {
-                UserService.createUser({name: inputName.value}).then(response => {
-                    if (response.ok) {
-                        localStorage.setItem("user_name", inputName.value);
-                        localStorage.setItem("user_id", response.id!);
-                        this.joinGame(response.id!, joinGameId ? joinGameId : localStorage.getItem("game_id")!);
-                    } else {
-                        this.toast.show("Error creating user: " + response.error?.error_code + " " + response.error?.error_message);
-                        this.hideLoading();
-                        this.flashElement(this.loginHtmlElement);
-                    }
-                });
-            }
+    private handleJoinGameBtn(name: string, userAlreadyCreated: boolean, joinGameId: string | undefined) {
+        this.showLoading();
+        if (userAlreadyCreated) {
+            this.joinGame(localStorage.getItem("user_id")!, joinGameId ? joinGameId : localStorage.getItem("game_id")!);
         } else {
-            this.flashElement(this.loginHtmlElement);
+            UserService.createUser({name: name}).then(response => {
+                if (response.ok) {
+                    localStorage.setItem("user_name", name);
+                    localStorage.setItem("user_id", response.id!);
+                    this.joinGame(response.id!, joinGameId ? joinGameId : localStorage.getItem("game_id")!);
+                } else {
+                    this.toast.show("Error creating user: " + response.error?.error_code + " " + response.error?.error_message);
+                    this.hideLoading();
+                    this.flashElement(this.loginHtmlElement);
+                }
+            });
         }
     }
 

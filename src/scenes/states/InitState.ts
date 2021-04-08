@@ -18,7 +18,7 @@ export class InitState extends BaseState {
         super.disableEnemyFieldInteractive(scene);
         if (!scene.timer.active) {
             scene.textBox.text = "Put your ships on red squares"
-            scene.timer.startTimer(30, () => {
+            scene.timer.startTimer(60, () => {
                 let randomShipIndexed: number[] = [];
                 scene.ships.forEach(img => img.destroy());
                 scene.ships.clear();
