@@ -2,7 +2,6 @@
 Battleship game with some changes written by Phaser 3.
 
 In this game you can explore enemy's ground and also move your ships after being discovered by the enemy.
-To play this game visit: [http://mamiri.me/battleship](http://mamiri.me/battleship)
 You need to run [this server](https://github.com/mahmood8664/battleship-server) project to provide APIs. 
 To create docker image run:
 ```shell
